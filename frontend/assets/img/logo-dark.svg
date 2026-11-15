@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 50" width="240" height="50" fill="none">
+  <defs>
+    <linearGradient id="tbGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D8C377"/>
+      <stop offset="50%" stop-color="#B89F3E"/>
+      <stop offset="100%" stop-color="#8F7826"/>
+    </linearGradient>
+    <linearGradient id="tbGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#244834"/>
+      <stop offset="100%" stop-color="#12251A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark / Emblem -->
+  <g transform="translate(4, 3)">
+    <circle cx="22" cy="22" r="20" stroke="url(#tbGold)" stroke-width="1.2" opacity="0.9"/>
+    <circle cx="22" cy="22" r="17.5" stroke="url(#tbGold)" stroke-width="0.6" stroke-dasharray="1.5 2" opacity="0.5"/>
+    <polygon points="22,3 23.5,4.8 22,6.6 20.5,4.8" fill="url(#tbGold)"/>
+    <polygon points="22,41 23.5,39.2 22,37.4 20.5,39.2" fill="url(#tbGold)"/>
+    <polygon points="3,22 4.8,23.5 6.6,22 4.8,20.5" fill="url(#tbGold)"/>
+    <polygon points="41,22 39.2,23.5 37.4,22 39.2,20.5" fill="url(#tbGold)"/>
+    <path d="M22 7 L25 19 L37 22 L25 25 L22 37 L19 25 L7 22 L19 19 Z" fill="url(#tbGreen)" stroke="url(#tbGold)" stroke-width="0.8"/>
+    <path d="M22 11 L24 20 L33 22 L24 24 L22 33 L20 24 L11 22 L20 20 Z" fill="url(#tbGold)"/>
+    <circle cx="22" cy="22" r="2.8" fill="url(#tbGreen)"/>
+    <circle cx="22" cy="22" r="1.2" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="60" y="27" font-family="'Cormorant Garamond', Georgia, serif" font-size="22" font-weight="600" letter-spacing="3.5" fill="#13261C">TRAVEL<tspan fill="#A88E35">BASE</tspan></text>
+  <text x="61" y="39" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="7" font-weight="600" letter-spacing="2.8" fill="#6A6C66">CURATED EXPEDITIONS</text>
+</svg>
+
