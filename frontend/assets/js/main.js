@@ -1,4 +1,4 @@
-const travelPackages = [
+﻿const travelPackages = [
   {
     id: "bali-escape",
     name: "Bali Island Escape",
@@ -375,9 +375,38 @@ function renderSiteChrome() {
     header.className = "site-header";
     header.innerHTML = `
       <div class="container nav-wrap">
-        <a class="brand" href="${route("index.html")}">
-          <span class="brand-mark"><i class="bi bi-compass"></i></span>
-          Travel<span>Base</span>
+        <a class="brand" href="${route("index.html")}" aria-label="TravelBase Home" style="display:inline-flex; align-items:center; gap:12px; text-decoration:none;">
+          <svg viewBox="0 0 48 48" width="40" height="40" fill="none" style="flex-shrink:0;">
+            <defs>
+              <linearGradient id="goldGradNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E5D18A"/>
+                <stop offset="50%" stop-color="#C0A84A"/>
+                <stop offset="100%" stop-color="#9A822E"/>
+              </linearGradient>
+              <linearGradient id="greenGradNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#244834"/>
+                <stop offset="100%" stop-color="#12251A"/>
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="22" stroke="url(#goldGradNav)" stroke-width="1.4" opacity="0.9"/>
+            <circle cx="24" cy="24" r="19" stroke="url(#goldGradNav)" stroke-width="0.8" stroke-dasharray="2 2" opacity="0.7"/>
+            <polygon points="24,2 25.5,5 24,8 22.5,5" fill="url(#goldGradNav)"/>
+            <polygon points="24,46 25.5,43 24,40 22.5,43" fill="url(#goldGradNav)"/>
+            <polygon points="2,24 5,25.5 8,24 5,22.5" fill="url(#goldGradNav)"/>
+            <polygon points="46,24 43,25.5 40,24 43,22.5" fill="url(#goldGradNav)"/>
+            <path d="M24 7 L27.5 20.5 L41 24 L27.5 27.5 L24 41 L20.5 27.5 L7 24 L20.5 20.5 Z" fill="url(#greenGradNav)" stroke="url(#goldGradNav)" stroke-width="0.8"/>
+            <path d="M24 12 L26.5 21.5 L36 24 L26.5 26.5 L24 36 L21.5 26.5 L12 24 L21.5 21.5 Z" fill="url(#goldGradNav)"/>
+            <circle cx="24" cy="24" r="3.5" fill="url(#greenGradNav)"/>
+            <circle cx="24" cy="24" r="1.5" fill="#FFFFFF"/>
+          </svg>
+          <div style="display:flex; flex-direction:column; line-height:1;">
+            <span style="font-family:'Cormorant Garamond',Georgia,serif; font-size:1.6rem; font-weight:700; letter-spacing:0.16em; color:#12251A; text-transform:uppercase;">
+              TRAVEL<span style="color:#A88E35; font-weight:600;">BASE</span>
+            </span>
+            <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.56rem; font-weight:700; letter-spacing:0.24em; color:#6B7068; text-transform:uppercase; margin-top:3px;">
+              Curated Expeditions
+            </span>
+          </div>
         </a>
         <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
           <i class="bi bi-list"></i>
@@ -389,8 +418,8 @@ function renderSiteChrome() {
           <a href="${route("pages/contact.html")}">Contact</a>
         </nav>
         <div class="nav-actions">
-          <a class="btn btn-outline btn-sm" href="${route("pages/login.html")}">Log in</a>
-          <a class="btn btn-primary btn-sm" href="${route("pages/register.html")}">Register</a>
+          <a class="btn btn-outline btn-sm" href="${route("pages/login.html")}">Sign In</a>
+          <a class="btn btn-primary btn-sm" href="${route("pages/packages.html")}">Explore Journeys</a>
         </div>
       </div>`;
   }
@@ -402,7 +431,9 @@ function renderSiteChrome() {
       <div class="container">
         <div class="footer-grid">
           <div>
-            <a class="brand" href="${route("index.html")}">Travel<span>Base</span></a>
+            <a class="brand" href="${route("index.html")}" style="display:inline-block;margin-bottom:18px;">
+              <img src="${route("assets/img/logo-light.svg")}" alt="TravelBase" height="40" style="display:block;">
+            </a>
             <p>Thoughtful trips, local expertise and the freedom to travel at your own pace. Let's make your next journey count.</p>
           </div>
           <div>
@@ -516,3 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
     element.textContent = new Date().getFullYear();
   });
 });
+
+
+
+
