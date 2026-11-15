@@ -1,4 +1,4 @@
-function renderPackageCards(packages, target) {
+﻿function renderPackageCards(packages, target) {
   if (!target) {
     return;
   }
@@ -178,3 +178,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPackageDetails();
   setupHomeSearch();
 });
+
