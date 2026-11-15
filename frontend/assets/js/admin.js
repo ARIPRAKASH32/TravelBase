@@ -50,7 +50,7 @@ function renderDashboardShell() {
       <a class="side-link" href="${root}/index.html">
         <i class="bi bi-box-arrow-up-right"></i>Visit website
       </a>
-      <a class="side-link" href="${root}/pages/login.html">
+      <a class="side-link" href="/logout" data-logout>
         <i class="bi bi-box-arrow-left"></i>Sign out
       </a>
     </aside>
@@ -77,6 +77,34 @@ function renderDashboardShell() {
   backdrop.addEventListener("click", () => {
     sidebar.classList.remove("open");
     backdrop.classList.remove("open");
+  });
+
+  shell.querySelector("[data-logout]").addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    try {
+      const tokenResponse = await fetch("/csrf-token", {
+        credentials: "same-origin",
+      });
+      if (!tokenResponse.ok) {
+        throw new Error("Unable to start a secure sign-out request.");
+      }
+
+      const { token } = await tokenResponse.json();
+      const response = await fetch("/logout", {
+        method: "POST",
+        headers: { "X-CSRF-Token": token },
+        credentials: "same-origin",
+      });
+      if (!response.ok) {
+        throw new Error("The sign-out request could not be completed.");
+      }
+
+      window.location.assign(response.url);
+    } catch (error) {
+      console.error("Sign-out request failed.", error);
+      window.alert("Unable to sign out right now. Please try again.");
+    }
   });
 }
 

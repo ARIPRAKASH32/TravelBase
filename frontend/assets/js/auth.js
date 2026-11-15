@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 async function submitToFlask(form, url, message) {
   try {
     const tokenResponse = await fetch("/csrf-token", { credentials: "same-origin" });
@@ -23,40 +24,41 @@ async function submitToFlask(form, url, message) {
 
 function setupRegistrationForm() {
   const form = document.querySelector("#register-form");
+=======
+const authErrors = {
+  invalid_credentials: "The email or password is incorrect.",
+  invalid_name: "Enter a name using 1 to 120 characters.",
+  invalid_email: "Enter a valid email address.",
+  invalid_phone: "Enter a valid phone number.",
+  weak_password: "Use a password between 8 and 128 characters.",
+  password_mismatch: "The passwords do not match.",
+  email_exists: "An account already uses that email address.",
+};
+>>>>>>> Stashed changes
 
-  if (!form) {
-    return;
-  }
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const message = document.querySelector("#form-message");
-
-    if (!form.reportValidity()) {
-      showMessage(
-        message,
-        "Please complete the required fields with valid information.",
-        "error",
-      );
-      return;
+async function submitAuthForm(form, message) {
+  try {
+    const tokenResponse = await fetch("/csrf-token", {
+      credentials: "same-origin",
+    });
+    if (!tokenResponse.ok) {
+      throw new Error("Unable to start a secure session.");
     }
 
-    const password = document.querySelector("#password");
-    const confirmPassword = document.querySelector("#confirm-password");
+    const { token } = await tokenResponse.json();
+    const response = await fetch(form.action, {
+      method: "POST",
+      body: new FormData(form),
+      headers: { "X-CSRF-Token": token },
+      credentials: "same-origin",
+      redirect: "follow",
+    });
 
-    if (password.value.length < 8) {
-      showMessage(message, "Use a password with at least 8 characters.", "error");
-      password.focus();
-      return;
+    if (!response.ok) {
+      throw new Error("The request could not be completed. Please try again.");
     }
 
-    if (password.value !== confirmPassword.value) {
-      showMessage(message, "The passwords do not match.", "error");
-      confirmPassword.focus();
-      return;
-    }
-
+<<<<<<< Updated upstream
     submitToFlask(form, "/register", message);
   });
 }
@@ -64,6 +66,22 @@ function setupRegistrationForm() {
 function setupLoginForm() {
   const form = document.querySelector("#login-form");
 
+=======
+    window.location.assign(response.url);
+  } catch (error) {
+    console.error("Authentication request failed.", error);
+    showMessage(
+      message,
+      error instanceof Error
+        ? error.message
+        : "The request could not be completed. Please try again.",
+      "error",
+    );
+  }
+}
+
+function setupAuthForm(form) {
+>>>>>>> Stashed changes
   if (!form) {
     return;
   }
@@ -72,6 +90,7 @@ function setupLoginForm() {
     event.preventDefault();
 
     const message = document.querySelector("#form-message");
+<<<<<<< Updated upstream
 
     if (!form.reportValidity()) {
       showMessage(
@@ -83,6 +102,29 @@ function setupLoginForm() {
     }
 
     submitToFlask(form, "/login", message);
+=======
+    if (!form.reportValidity()) {
+      showMessage(message, "Please check the required fields.", "error");
+      return;
+    }
+
+    if (form.id === "register-form") {
+      const password = form.elements.namedItem("password");
+      const confirmPassword = form.elements.namedItem("confirmPassword");
+      if (password.value.length < 8 || password.value.length > 128) {
+        showMessage(message, "Use a password between 8 and 128 characters.", "error");
+        password.focus();
+        return;
+      }
+      if (password.value !== confirmPassword.value) {
+        showMessage(message, "The passwords do not match.", "error");
+        confirmPassword.focus();
+        return;
+      }
+    }
+
+    submitAuthForm(form, message);
+>>>>>>> Stashed changes
   });
 }
 
@@ -104,7 +146,16 @@ function setupPasswordRecoveryLink() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupRegistrationForm();
-  setupLoginForm();
+  setupAuthForm(document.querySelector("#register-form"));
+  setupAuthForm(document.querySelector("#login-form"));
   setupPasswordRecoveryLink();
+
+  const errorCode = new URLSearchParams(location.search).get("error");
+  if (errorCode && authErrors[errorCode]) {
+    showMessage(
+      document.querySelector("#form-message"),
+      authErrors[errorCode],
+      "error",
+    );
+  }
 });

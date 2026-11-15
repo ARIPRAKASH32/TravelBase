@@ -28,7 +28,7 @@
           <p>A few details to get started.</p>
           <div id="form-message" hidden>
           </div>
-          <form class="auth-form" id="register-form" novalidate>
+          <form class="auth-form" id="register-form" method="post" action="/register" novalidate>
             <div class="field">
               <label for="name">Full name</label>
               <input id="name" name="name" required autocomplete="name">
@@ -51,8 +51,7 @@
             </div>
             <button class="btn btn-primary" type="submit">Create account</button>
           </form>
-          <p style="margin-top:20px">Already registered? <a href="login.html">Log in</a></p>
-          <p class="notice">Demo only: account creation is not connected to a server.</p>
+          <p style="margin-top:20px">Already registered? <a href="/login">Log in</a></p>
         </div>
       </section>
     </main>
