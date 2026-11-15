@@ -1,10 +1,10 @@
 from decimal import Decimal
 import re
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
 
 from backend.app import db
-from backend.app.models import Destination, Enquiry, Package
+from backend.app.models import Destination, Enquiry, Package, User
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
@@ -124,3 +124,67 @@ def submit_enquiry():
         "message": "Thank you. Your enquiry has been received and our concierge will contact you.",
         "id": enquiry.id
     }), 201
+
+
+@api_bp.get("/profile")
+def get_profile():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone": user.phone or "",
+        "address": user.address or "",
+        "role": user.role,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+    })
+
+
+@api_bp.put("/profile")
+def update_profile():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    name = (data.get("name") or "").strip()
+    phone = (data.get("phone") or "").strip()
+    address = (data.get("address") or "").strip()
+
+    if name:
+        if len(name) > 120:
+            return jsonify({"error": "Name exceeds 120 characters"}), 400
+        user.name = name
+
+    if phone:
+        if len(phone) > 30:
+            return jsonify({"error": "Phone exceeds 30 characters"}), 400
+        user.phone = phone
+
+    if address is not None:
+        if len(address) > 255:
+            return jsonify({"error": "Address exceeds 255 characters"}), 400
+        user.address = address
+
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "message": "Profile updated successfully",
+        "profile": {
+            "name": user.name,
+            "email": user.email,
+            "phone": user.phone or "",
+            "address": user.address or "",
+        }
+    })
