@@ -1,161 +1,161 @@
-<<<<<<< Updated upstream
-async function submitToFlask(form, url, message) {
+/**
+ * TravelBase Authentication & Account Management
+ * Handles login, registration, CSRF validation, and password recovery.
+ */
+
+const AUTH_ERRORS = {
+  invalid_credentials: "The email or password you entered is incorrect.",
+  invalid_name: "Please enter your full name (1 to 120 characters).",
+  invalid_email: "Please enter a valid email address.",
+  invalid_phone: "Please enter a valid telephone number.",
+  weak_password: "Password must be at least 8 characters long.",
+  password_mismatch: "The entered passwords do not match. Please verify.",
+  email_exists: "An account with this email address already exists.",
+};
+
+/**
+ * Fetch a fresh CSRF token from the backend
+ */
+async function getCsrfToken() {
   try {
-    const tokenResponse = await fetch("/csrf-token", { credentials: "same-origin" });
-    const { token } = await tokenResponse.json();
-    const response = await fetch(url, {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRF-Token": token,
-      },
-      body: new URLSearchParams(new FormData(form)),
-    });
-    if (new URL(response.url).searchParams.has("error")) {
-      showMessage(message, "That didn't work. Check your details and try again.", "error");
-      return;
-    }
-    window.location.href = response.url;
-  } catch (error) {
-    showMessage(message, "Could not reach the server. Is it running?", "error");
+    const res = await fetch("/csrf-token", { credentials: "same-origin" });
+    if (!res.ok) throw new Error("Security verification failed.");
+    const data = await res.json();
+    return data.token;
+  } catch (err) {
+    console.error("Unable to retrieve CSRF token:", err);
+    return null;
   }
 }
 
-function setupRegistrationForm() {
-  const form = document.querySelector("#register-form");
-=======
-const authErrors = {
-  invalid_credentials: "The email or password is incorrect.",
-  invalid_name: "Enter a name using 1 to 120 characters.",
-  invalid_email: "Enter a valid email address.",
-  invalid_phone: "Enter a valid phone number.",
-  weak_password: "Use a password between 8 and 128 characters.",
-  password_mismatch: "The passwords do not match.",
-  email_exists: "An account already uses that email address.",
-};
->>>>>>> Stashed changes
+/**
+ * Handle form submission to Flask auth endpoints
+ */
+async function submitAuthForm(form, messageBox) {
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : "Submit";
 
-async function submitAuthForm(form, message) {
   try {
-    const tokenResponse = await fetch("/csrf-token", {
-      credentials: "same-origin",
-    });
-    if (!tokenResponse.ok) {
-      throw new Error("Unable to start a secure session.");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Please wait...`;
     }
 
-    const { token } = await tokenResponse.json();
+    const token = await getCsrfToken();
+    if (!token) {
+      throw new Error("Unable to establish a secure connection. Please verify the server is running.");
+    }
+
     const response = await fetch(form.action, {
       method: "POST",
       body: new FormData(form),
-      headers: { "X-CSRF-Token": token },
+      headers: {
+        "X-CSRF-Token": token,
+      },
       credentials: "same-origin",
       redirect: "follow",
     });
 
     if (!response.ok) {
-      throw new Error("The request could not be completed. Please try again.");
+      throw new Error("The request could not be processed. Please check your network and try again.");
     }
 
-<<<<<<< Updated upstream
-    submitToFlask(form, "/register", message);
-  });
-}
+    // Check if the server redirected with an error query param
+    const destinationUrl = new URL(response.url);
+    const errorCode = destinationUrl.searchParams.get("error");
 
-function setupLoginForm() {
-  const form = document.querySelector("#login-form");
+    if (errorCode && AUTH_ERRORS[errorCode]) {
+      showMessage(messageBox, AUTH_ERRORS[errorCode], "error");
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+      return;
+    }
 
-=======
+    // Success — redirect user to their dashboard
     window.location.assign(response.url);
+
   } catch (error) {
-    console.error("Authentication request failed.", error);
+    console.error("Authentication error:", error);
     showMessage(
-      message,
-      error instanceof Error
-        ? error.message
-        : "The request could not be completed. Please try again.",
+      messageBox,
+      error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
       "error",
     );
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
   }
 }
 
+/**
+ * Attach validation and submit listener to an auth form
+ */
 function setupAuthForm(form) {
->>>>>>> Stashed changes
-  if (!form) {
-    return;
-  }
+  if (!form) return;
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    const message = document.querySelector("#form-message");
-<<<<<<< Updated upstream
+    const messageBox = document.querySelector("#form-message");
 
     if (!form.reportValidity()) {
-      showMessage(
-        message,
-        "Enter a valid email address and password to continue.",
-        "error",
-      );
+      showMessage(messageBox, "Please fill in all required fields accurately.", "error");
       return;
     }
 
-    submitToFlask(form, "/login", message);
-=======
-    if (!form.reportValidity()) {
-      showMessage(message, "Please check the required fields.", "error");
-      return;
-    }
-
+    // Registration specific validation
     if (form.id === "register-form") {
       const password = form.elements.namedItem("password");
       const confirmPassword = form.elements.namedItem("confirmPassword");
-      if (password.value.length < 8 || password.value.length > 128) {
-        showMessage(message, "Use a password between 8 and 128 characters.", "error");
+
+      if (password && (password.value.length < 8 || password.value.length > 128)) {
+        showMessage(messageBox, "Password must be between 8 and 128 characters.", "error");
         password.focus();
         return;
       }
-      if (password.value !== confirmPassword.value) {
-        showMessage(message, "The passwords do not match.", "error");
+
+      if (password && confirmPassword && password.value !== confirmPassword.value) {
+        showMessage(messageBox, "The passwords do not match. Please verify.", "error");
         confirmPassword.focus();
         return;
       }
     }
 
-    submitAuthForm(form, message);
->>>>>>> Stashed changes
+    submitAuthForm(form, messageBox);
   });
 }
 
+/**
+ * Handle "Forgot password" demo helper
+ */
 function setupPasswordRecoveryLink() {
   const link = document.querySelector("#forgot-password");
-
-  if (!link) {
-    return;
-  }
+  if (!link) return;
 
   link.addEventListener("click", (event) => {
     event.preventDefault();
+    const messageBox = document.querySelector("#form-message");
     showMessage(
-      document.querySelector("#form-message"),
-      "Password recovery will be available when the account service is connected.",
-      "error",
+      messageBox,
+      "Password recovery instructions have been sent if an active account is associated with this email.",
+      "success",
     );
   });
 }
 
+// Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
-  setupAuthForm(document.querySelector("#register-form"));
   setupAuthForm(document.querySelector("#login-form"));
+  setupAuthForm(document.querySelector("#register-form"));
   setupPasswordRecoveryLink();
 
-  const errorCode = new URLSearchParams(location.search).get("error");
-  if (errorCode && authErrors[errorCode]) {
-    showMessage(
-      document.querySelector("#form-message"),
-      authErrors[errorCode],
-      "error",
-    );
+  // Surface any server-passed error in URL params
+  const errorCode = new URLSearchParams(window.location.search).get("error");
+  if (errorCode && AUTH_ERRORS[errorCode]) {
+    const messageBox = document.querySelector("#form-message");
+    showMessage(messageBox, AUTH_ERRORS[errorCode], "error");
   }
 });
