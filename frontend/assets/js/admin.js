@@ -1,4 +1,4 @@
-function renderDashboardShell() {
+﻿function renderDashboardShell() {
   const shell = document.querySelector("#dashboard-shell");
 
   if (!shell) {
@@ -249,14 +249,14 @@ function setupCharts(page) {
               2480000, 3120000, 2760000, 3840000,
               4210000, 3580000, 4960000, 5275000,
             ],
-            backgroundColor: "#2b85b8",
+            backgroundColor: "#1E3A2B",
             borderRadius: 3,
             yAxisID: "revenue",
           },
           {
             label: "Bookings",
             data: [18, 24, 21, 30, 34, 29, 39, 42],
-            backgroundColor: "#b7d8e9",
+            backgroundColor: "#C0A84A",
             borderRadius: 3,
             yAxisID: "bookings",
           },
@@ -313,7 +313,7 @@ function setupBookingStatusChart() {
       datasets: [
         {
           data: [57, 19, 18, 6],
-          backgroundColor: ["#25855a", "#e5a93d", "#1677b8", "#d67878"],
+          backgroundColor: ["#1E3A2B", "#C0A84A", "#6B7A6E", "#A04040"],
           borderWidth: 0,
         },
       ],
@@ -775,3 +775,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDashboardShell();
   setupAdmin();
 });
+
