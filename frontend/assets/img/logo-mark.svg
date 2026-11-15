@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <linearGradient id="tbGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5D18A"/>
+      <stop offset="50%" stop-color="#C0A84A"/>
+      <stop offset="100%" stop-color="#9A822E"/>
+    </linearGradient>
+    <linearGradient id="tbGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#244834"/>
+      <stop offset="100%" stop-color="#12251A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Circle -->
+  <circle cx="24" cy="24" r="22" stroke="url(#tbGoldGrad)" stroke-width="1.2" opacity="0.85"/>
+  <circle cx="24" cy="24" r="19.5" stroke="url(#tbGoldGrad)" stroke-width="0.6" stroke-dasharray="1.5 2.5" opacity="0.6"/>
+
+  <!-- Four Cardinal Diamonds -->
+  <polygon points="24,3 25.5,5 24,7 22.5,5" fill="url(#tbGoldGrad)"/>
+  <polygon points="24,45 25.5,43 24,41 22.5,43" fill="url(#tbGoldGrad)"/>
+  <polygon points="3,24 5,25.5 7,24 5,22.5" fill="url(#tbGoldGrad)"/>
+  <polygon points="45,24 43,25.5 41,24 43,22.5" fill="url(#tbGoldGrad)"/>
+
+  <!-- Central Emblem: Compass Star & Horizon Arch -->
+  <path d="M24 8 L27 21 L40 24 L27 27 L24 40 L21 27 L8 24 L21 21 Z" fill="url(#tbGreenGrad)" stroke="url(#tbGoldGrad)" stroke-width="0.8"/>
+  <path d="M24 13 L26 22 L35 24 L26 26 L24 35 L22 26 L13 24 L22 22 Z" fill="url(#tbGoldGrad)"/>
+
+  <!-- Core Diamond Star -->
+  <circle cx="24" cy="24" r="3.2" fill="url(#tbGreenGrad)"/>
+  <circle cx="24" cy="24" r="1.4" fill="#FFFFFF"/>
+</svg>
+
