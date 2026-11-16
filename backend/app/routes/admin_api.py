@@ -193,3 +193,46 @@ def delete_admin_destination(id):
     db.session.delete(dest)
     db.session.commit()
     return jsonify({"success": True, "message": "Destination deleted successfully"})
+
+
+@admin_api_bp.get("/bookings")
+def get_all_admin_bookings():
+    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    results = []
+    for b in bookings:
+        results.append({
+            "id": b.id,
+            "code": b.booking_code,
+            "customer_name": b.customer.name if b.customer else "Unknown",
+            "customer_email": b.customer.email if b.customer else "",
+            "customer_phone": b.customer.phone if (b.customer and b.customer.phone) else "",
+            "package_name": b.package.package_name if b.package else "Custom Trip",
+            "destination": b.package.destination.name if (b.package and b.package.destination) else "",
+            "travel_date": b.travel_date.isoformat() if b.travel_date else None,
+            "people": b.number_of_people,
+            "total_amount": float(b.total_amount) if b.total_amount else 0.0,
+            "status": b.booking_status,
+            "created_at": b.created_at.isoformat() if b.created_at else None,
+        })
+    return jsonify(results)
+
+
+@admin_api_bp.patch("/bookings/<int:id>/status")
+def update_booking_status(id):
+    booking = Booking.query.get(id)
+    if not booking:
+        return jsonify({"error": "Booking not found"}), 404
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    new_status = (data.get("status") or "").lower().strip()
+    valid_statuses = {"pending", "confirmed", "cancelled", "completed"}
+    if new_status not in valid_statuses:
+        return jsonify({"error": f"Invalid status. Choose from: {', '.join(valid_statuses)}"}), 400
+
+    booking.booking_status = new_status
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "message": f"Booking {booking.booking_code} status updated to {new_status}",
+        "status": new_status,
+    })
