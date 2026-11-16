@@ -140,3 +140,56 @@ def delete_admin_package(slug):
     pkg.status = "archived"
     db.session.commit()
     return jsonify({"success": True, "message": "Package archived successfully"})
+
+
+@admin_api_bp.post("/destinations")
+def create_admin_destination():
+    data = request.get_json(silent=True) or request.form.to_dict()
+    name = (data.get("name") or "").strip()
+    location = (data.get("location") or name).strip()
+    if not name:
+        return jsonify({"error": "Destination name is required"}), 400
+
+    dest = Destination(
+        name=name,
+        location=location,
+        description=data.get("description", "").strip(),
+        image=data.get("image", "").strip(),
+    )
+    db.session.add(dest)
+    db.session.commit()
+    return jsonify({"success": True, "message": f"Destination {name} created", "id": dest.id}), 201
+
+
+@admin_api_bp.put("/destinations/<int:id>")
+def update_admin_destination(id):
+    dest = Destination.query.get(id)
+    if not dest:
+        return jsonify({"error": "Destination not found"}), 404
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    if "name" in data:
+        dest.name = data["name"].strip()
+    if "location" in data:
+        dest.location = data["location"].strip()
+    if "description" in data:
+        dest.description = data["description"].strip()
+    if "image" in data:
+        dest.image = data["image"].strip()
+
+    db.session.commit()
+    return jsonify({"success": True, "message": "Destination updated successfully"})
+
+
+@admin_api_bp.delete("/destinations/<int:id>")
+def delete_admin_destination(id):
+    dest = Destination.query.get(id)
+    if not dest:
+        return jsonify({"error": "Destination not found"}), 404
+
+    if dest.packages:
+        return jsonify({"error": "Cannot delete destination that has associated packages"}), 400
+
+    db.session.delete(dest)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Destination deleted successfully"})
