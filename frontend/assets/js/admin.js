@@ -482,6 +482,32 @@ function showAdminModal(title, content, onSubmit) {
 
 function setupPackageManagement() {
   const tableBody = document.querySelector("#admin-package-rows");
+
+  // Attempt live sync from MySQL database
+  async function loadBackendPackages() {
+    try {
+      const res = await fetch("/api/packages");
+      if (res.ok) {
+        const liveList = await res.json();
+        if (Array.isArray(liveList) && liveList.length > 0) {
+          adminPackages = liveList.map((p) => ({
+            id: p.id,
+            name: p.name,
+            destination: p.destination,
+            price: p.price,
+            days: p.days,
+            status: p.status === "active" ? "Active" : "Draft",
+            image: p.image,
+            category: p.category,
+            description: p.description,
+          }));
+          renderPackages();
+        }
+      }
+    } catch (_) {}
+  }
+  loadBackendPackages();
+
   const fields = `
     <div class="form-grid">
       <div class="field">
