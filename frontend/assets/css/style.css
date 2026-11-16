@@ -5,7 +5,7 @@
             Moss (#6B7A6E), Deep Forest Green (#12251A), Charcoal (#112419)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap');
 
 /* --------------------------------------------------------------------------
    1. DESIGN TOKENS
@@ -41,9 +41,11 @@
   --tb-shadow-md:    0 12px 36px rgba(18, 37, 26, 0.12);
   --tb-shadow-lg:    0 24px 60px rgba(18, 37, 26, 0.16);
 
-  /* Typography */
-  --font-serif:      'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  /* Typography — Professional Luxury System */
+  --font-serif:      'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans:       'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display:    'Playfair Display', Georgia, serif;
+  --font-accent:     'Outfit', 'Plus Jakarta Sans', sans-serif;
 
   /* Border Radius */
   --radius-sm:       6px;
@@ -91,19 +93,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
   font-family: var(--font-serif);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--tb-deep-green);
-  line-height: 1.18;
+  line-height: 1.14;
+  margin-top: 0;
+  letter-spacing: -0.02em;
+}
+
+h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--tb-deep-green);
+  line-height: 1.28;
   margin-top: 0;
   letter-spacing: -0.015em;
 }
 
-h1 { font-size: clamp(2.6rem, 5.5vw, 4.4rem); }
-h2 { font-size: clamp(2rem, 4vw, 3.2rem); }
-h3 { font-size: clamp(1.4rem, 2.5vw, 2rem); }
-h4 { font-size: 1.3rem; }
+h1 { font-size: clamp(2.6rem, 5.2vw, 4.2rem); font-weight: 700; }
+h2 { font-size: clamp(2rem, 3.8vw, 3rem); font-weight: 700; }
+h3 { font-size: clamp(1.35rem, 2.2vw, 1.85rem); font-weight: 700; }
+h4 { font-size: 1.25rem; font-weight: 600; }
+h5 { font-size: 1.1rem; font-weight: 600; }
+h6 { font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
 
 p {
   margin-top: 0;
@@ -503,25 +516,27 @@ input:-webkit-autofill:active {
 }
 
 .hero h1 {
+  font-family: var(--font-serif);
   font-size: clamp(3.2rem, 6.4vw, 5.2rem);
-  font-weight: 600;
-  line-height: 1.06;
+  font-weight: 700;
+  line-height: 1.08;
   color: #102418;
   margin: 10px 0 20px;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.025em;
 }
 
 .hero h1 em {
   font-family: var(--font-serif);
   font-style: italic;
-  font-weight: 500;
-  color: #9A7B2C;
+  font-weight: 600;
+  color: #C0A84A;
 }
 
 .hero p {
+  font-family: var(--font-sans);
   font-size: 1.18rem;
   font-weight: 500;
-  line-height: 1.7;
+  line-height: 1.75;
   color: #24332A;
   max-width: 580px;
   margin-bottom: 36px;
@@ -831,11 +846,12 @@ input:-webkit-autofill:active {
 
 .package-body h3 {
   font-family: var(--font-serif);
-  font-size: 1.6rem;
-  font-weight: 600;
+  font-size: 1.55rem;
+  font-weight: 700;
   color: var(--tb-deep-green);
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   line-height: 1.25;
+  letter-spacing: -0.015em;
 }
 
 .package-footer {
@@ -849,8 +865,10 @@ input:-webkit-autofill:active {
 
 .package-price {
   font-family: var(--font-sans);
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum" on, "lnum" on;
   color: var(--tb-deep-green);
 }
 

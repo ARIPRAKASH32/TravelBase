@@ -111,8 +111,10 @@
 
 .app-titlebar h1 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: 2.2rem;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
   color: var(--tb-deep-green);
 }
 
@@ -155,10 +157,12 @@
 .stat-card strong {
   display: block;
   margin: 10px 0 6px;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--tb-deep-green);
   font-size: 2.1rem;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum" on, "lnum" on;
   line-height: 1.1;
 }
 

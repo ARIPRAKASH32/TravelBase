@@ -406,11 +406,11 @@ function renderSiteChrome() {
             <circle cx="24" cy="24" r="1.5" fill="#FFFFFF"/>
           </svg>
           <div style="display:flex; flex-direction:column; line-height:1;">
-            <span style="font-family:'Cormorant Garamond',Georgia,serif; font-size:1.6rem; font-weight:700; letter-spacing:0.16em; color:#12251A; text-transform:uppercase;">
-              TRAVEL<span style="color:#A88E35; font-weight:600;">BASE</span>
+            <span style="font-family:var(--font-serif); font-size:1.6rem; font-weight:700; letter-spacing:0.04em; color:#12251A;">
+              Travel<span style="color:#C0A84A; font-weight:700;">Base</span>
             </span>
-            <span style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.56rem; font-weight:700; letter-spacing:0.24em; color:#6B7068; text-transform:uppercase; margin-top:3px;">
-              Curated Expeditions
+            <span style="font-family:var(--font-sans); font-size:0.6rem; font-weight:700; letter-spacing:0.22em; color:#6B7A6E; text-transform:uppercase; margin-top:2px;">
+              Bespoke Journeys
             </span>
           </div>
         </a>
