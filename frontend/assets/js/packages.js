@@ -173,8 +173,8 @@ function renderPackageDetails() {
       <span class="eyebrow">From</span>
       <h2>${formatINR(trip.price)} <small class="text-muted">/ person</small></h2>
       <p class="text-muted">${trip.days} days · ${trip.nights} nights</p>
-      <a class="btn btn-primary" style="width: 100%" href="${route("pages/customer/booking.html")}?id=${trip.id}">
-        Book this trip
+      <a class="btn btn-primary btn-lg" style="width: 100%" href="${route("pages/customer/booking.html")}?id=${trip.id}">
+        <i class="bi bi-calendar-check" style="margin-right: 8px;"></i> Book This Journey
       </a>
       <p class="notice">No payment is collected in this frontend demo.</p>
     </aside>`;
