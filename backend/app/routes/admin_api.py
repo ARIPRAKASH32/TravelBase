@@ -236,3 +236,20 @@ def update_booking_status(id):
         "message": f"Booking {booking.booking_code} status updated to {new_status}",
         "status": new_status,
     })
+
+
+@admin_api_bp.get("/customers")
+def get_admin_customers():
+    customers = User.query.filter_by(role="customer").order_by(User.created_at.desc()).all()
+    results = []
+    for c in customers:
+        results.append({
+            "id": c.id,
+            "name": c.name,
+            "email": c.email,
+            "phone": c.phone or "",
+            "address": c.address or "",
+            "bookings_count": len(c.bookings) if c.bookings else 0,
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        })
+    return jsonify(results)
