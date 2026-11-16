@@ -26,7 +26,7 @@
   </g>
 
   <!-- Typography -->
-  <text x="60" y="27" font-family="'Cormorant Garamond', Georgia, serif" font-size="22" font-weight="600" letter-spacing="3.5" fill="#13261C">TRAVEL<tspan fill="#A88E35">BASE</tspan></text>
+  <text x="60" y="27" font-family="'Playfair Display', Georgia, serif" font-size="22" font-weight="700" letter-spacing="3.5" fill="#13261C">TRAVEL<tspan fill="#A88E35">BASE</tspan></text>
   <text x="61" y="39" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="7" font-weight="600" letter-spacing="2.8" fill="#6A6C66">CURATED EXPEDITIONS</text>
 </svg>
 

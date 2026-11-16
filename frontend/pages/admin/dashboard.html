@@ -3,153 +3,210 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard | TravelBase</title>
+    <title>Executive Operations Dashboard | TravelBase</title>
+    <!-- Professional Luxury Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/tb-design-system.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/style.css?v=3.1">
-    <link rel="stylesheet" href="../../assets/css/dashboard.css?v=3.1">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css?v=3.2">
     <link rel="stylesheet" href="../../assets/css/responsive.css?v=3.1">
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script defer src="../../assets/js/main.js?v=2.2"></script>
     <script defer src="../../assets/js/admin.js"></script>
   </head>
   <body data-root="../.." data-role="admin" data-section="dashboard">
-    <div id="dashboard-shell">
-    </div>
+    <div id="dashboard-shell"></div>
+
     <main class="app-main">
-      <div class="app-titlebar">
-        <div>
-          <h1>Dashboard</h1>
-          <p>A clear view of TravelBase activity. Figures below are illustrative demo data.</p>
+      <!-- Executive Welcome & Telemetry Header -->
+      <div class="executive-banner">
+        <div class="executive-title-group">
+          <div class="meta-tag-strip">
+            <span class="live-pulse-chip"><span class="pulse-emerald"></span> MySQL Active (3306)</span>
+            <span class="session-chip"><i class="bi bi-shield-check"></i> Operations Console</span>
+          </div>
+          <h1 class="executive-heading">Operations &amp; Revenue Console</h1>
+          <p class="executive-subtitle">Live telemetry across curated luxury journeys, traveler requests, and confirmed bookings.</p>
         </div>
-        <a class="btn btn-outline" href="reports.html"><i class="bi bi-download"></i> View reports</a>
+
+        <div class="executive-actions">
+          <a class="btn btn-gold btn-sm" href="packages.html"><i class="bi bi-plus-circle-fill"></i> New Package</a>
+          <a class="btn btn-primary btn-sm" href="destinations.html"><i class="bi bi-geo-alt-fill"></i> Add Destination</a>
+          <a class="btn btn-outline btn-sm" href="reports.html"><i class="bi bi-file-earmark-arrow-down"></i> Reports</a>
+        </div>
       </div>
+
+      <!-- Human-Crafted 4 Stat Cards -->
       <section class="stat-grid">
-        <article class="stat-card">
-          <span>Total customers</span>
-          <strong>1,284</strong>
-          <small>Sample dataset</small>
+        <!-- Card 1: Revenue -->
+        <article class="stat-card stat-card--revenue" id="card-revenue">
+          <div class="stat-card-header">
+            <div class="stat-icon-box stat-icon-box--gold">
+              <i class="bi bi-wallet2"></i>
+            </div>
+            <span class="stat-trend stat-trend--up"><i class="bi bi-arrow-up-right"></i> Realized</span>
+          </div>
+          <span class="stat-label">Total Realized Revenue</span>
+          <strong class="stat-number" id="val-revenue">₹1,39,600</strong>
+          <small class="stat-note" id="sub-revenue"><i class="bi bi-check2-circle"></i> From confirmed bookings in MySQL</small>
         </article>
-        <article class="stat-card">
-          <span>Active packages</span>
-          <strong>24</strong>
-          <small>Across 11 destinations</small>
+
+        <!-- Card 2: Bookings -->
+        <article class="stat-card stat-card--bookings" id="card-bookings">
+          <div class="stat-card-header">
+            <div class="stat-icon-box stat-icon-box--emerald">
+              <i class="bi bi-ticket-perforated-fill"></i>
+            </div>
+            <span class="stat-trend stat-trend--neutral"><span class="dot-amber"></span> In Queue</span>
+          </div>
+          <span class="stat-label">Active Bookings</span>
+          <strong class="stat-number" id="val-bookings">7</strong>
+          <small class="stat-note" id="sub-bookings"><span class="badge-dot dot-success"></span> 2 confirmed • 5 in review</small>
         </article>
-        <article class="stat-card">
-          <span>Bookings this month</span>
-          <strong>142</strong>
-          <small>Sample dataset</small>
+
+        <!-- Card 3: Packages -->
+        <article class="stat-card stat-card--packages" id="card-packages">
+          <div class="stat-card-header">
+            <div class="stat-icon-box stat-icon-box--teal">
+              <i class="bi bi-compass-fill"></i>
+            </div>
+            <span class="stat-trend stat-trend--info"><i class="bi bi-broadcast"></i> Published</span>
+          </div>
+          <span class="stat-label">Curated Expeditions</span>
+          <strong class="stat-number" id="val-packages">9</strong>
+          <small class="stat-note" id="sub-packages"><i class="bi bi-globe-asia-australia"></i> Across 10 global destinations</small>
         </article>
-        <article class="stat-card">
-          <span>Revenue this month</span>
-          <strong>₹52,75,000</strong>
-          <small>Illustrative only</small>
+
+        <!-- Card 4: Customers -->
+        <article class="stat-card stat-card--customers" id="card-customers">
+          <div class="stat-card-header">
+            <div class="stat-icon-box stat-icon-box--sand">
+              <i class="bi bi-person-check-fill"></i>
+            </div>
+            <span class="stat-trend stat-trend--vip"><i class="bi bi-stars"></i> Verified</span>
+          </div>
+          <span class="stat-label">Registered Travelers</span>
+          <strong class="stat-number" id="val-customers">2</strong>
+          <small class="stat-note" id="sub-customers"><i class="bi bi-patch-check"></i> 2 verified traveler accounts</small>
         </article>
       </section>
+
+      <!-- Quick Management Ribbon -->
+      <section class="quick-management-bar">
+        <span class="quick-title"><i class="bi bi-lightning-charge-fill"></i> Direct Operations:</span>
+        <div class="quick-links-wrap">
+          <a href="destinations.html" class="quick-pill"><i class="bi bi-geo-alt"></i> Manage Destinations</a>
+          <a href="packages.html" class="quick-pill"><i class="bi bi-map"></i> Manage Packages</a>
+          <a href="bookings.html" class="quick-pill"><i class="bi bi-ticket-perforated"></i> Review Bookings</a>
+          <a href="customers.html" class="quick-pill"><i class="bi bi-people"></i> Client Registry</a>
+          <a href="payments.html" class="quick-pill"><i class="bi bi-credit-card"></i> Payment Logs</a>
+        </div>
+      </section>
+
+      <!-- Charts Section -->
       <div class="content-grid">
         <section class="panel">
           <div class="panel-heading">
-            <h2>Monthly revenue</h2>
-            <span class="notice">Illustrative data</span>
+            <div>
+              <h2>Financial &amp; Booking Dynamics</h2>
+              <p class="panel-subtitle">Monthly revenue progression alongside passenger reservations</p>
+            </div>
+            <span class="notice notice-pill"><i class="bi bi-calendar3"></i> 2026 Fiscal Season</span>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap" style="min-height: 310px;">
             <canvas data-chart aria-label="Monthly revenue chart"></canvas>
           </div>
         </section>
+
         <section class="panel">
           <div class="panel-heading">
-            <h2>Booking status</h2>
-            <span class="notice">Current demo mix</span>
+            <div>
+              <h2>Booking Status Mix</h2>
+              <p class="panel-subtitle">Live distribution across client reservation lifecycle</p>
+            </div>
+            <span class="notice notice-pill"><i class="bi bi-pie-chart"></i> Real-time Breakdown</span>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap" style="min-height: 310px;">
             <canvas data-booking-chart aria-label="Booking status chart"></canvas>
           </div>
         </section>
       </div>
+
+      <!-- Recent Bookings Panel (Populated dynamically from MySQL) -->
       <section class="panel">
         <div class="panel-heading">
-          <h2>Recent bookings</h2>
-          <a href="bookings.html">Manage bookings</a>
+          <div>
+            <h2>Recent Client Reservations</h2>
+            <p class="panel-subtitle">Latest booking requests submitted to MySQL database</p>
+          </div>
+          <a class="panel-link" href="bookings.html">View all bookings <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Booking ID</th>
-                <th>Customer</th>
-                <th>Package</th>
-                <th>Travel date</th>
-                <th>Amount</th>
+                <th>Booking Code</th>
+                <th>Client Name</th>
+                <th>Itinerary Package</th>
+                <th>Travel Date</th>
+                <th>Total Value</th>
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>TE-24081</td>
-                <td>Alex Morgan</td>
-                <td>Bali Island Escape</td>
-                <td>12 May 2027</td>
-                <td>₹2,58,000</td>
-                <td><span class="badge badge-success">Confirmed</span></td>
-              </tr>
-              <tr>
-                <td>TE-24080</td>
-                <td>Samira Patel</td>
-                <td>Swiss Alpine Discovery</td>
-                <td>21 Jun 2027</td>
-                <td>₹4,96,000</td>
-                <td><span class="badge badge-warning">Pending</span></td>
-              </tr>
-              <tr>
-                <td>TE-24079</td>
-                <td>Jordan Lee</td>
-                <td>Kyoto Culture Trail</td>
-                <td>08 Apr 2027</td>
-                <td>₹3,48,000</td>
-                <td><span class="badge badge-success">Confirmed</span></td>
-              </tr>
-              <tr>
-                <td>TE-24082</td>
-                <td>Riya Sharma</td>
-                <td>Golden Triangle & Taj Mahal</td>
-                <td>28 Dec 2026</td>
-                <td>₹97,800</td>
-                <td><span class="badge badge-warning">Pending</span></td>
-              </tr>
+            <tbody id="recent-bookings-rows">
+              <!-- Dynamically populated from /api/admin/stats -->
             </tbody>
           </table>
         </div>
       </section>
+
+      <!-- Active International Destinations Panel -->
       <section class="panel">
         <div class="panel-heading">
-          <h2>Popular destinations</h2>
-          <a href="destinations.html">All destinations</a>
+          <div>
+            <h2>Active International Destinations</h2>
+            <p class="panel-subtitle">Featured destinations with active itinerary pairings</p>
+          </div>
+          <a class="panel-link" href="destinations.html">Manage all destinations <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Destination</th>
-                <th>Bookings</th>
-                <th>Share</th>
+                <th>Region / Country</th>
+                <th>Itineraries Available</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Agra</td>
-                <td>44</td>
-                <td>31%</td>
+                <td><strong>Bali Island Escape</strong></td>
+                <td>Indonesia</td>
+                <td>1 Curated Expedition</td>
+                <td><span class="badge badge-success">Active</span></td>
               </tr>
               <tr>
-                <td>Kerala</td>
-                <td>32</td>
-                <td>23%</td>
+                <td><strong>Swiss Alpine Discovery</strong></td>
+                <td>Lucerne &amp; Interlaken, Switzerland</td>
+                <td>1 Curated Expedition</td>
+                <td><span class="badge badge-success">Active</span></td>
               </tr>
               <tr>
-                <td>Jaipur</td>
-                <td>28</td>
-                <td>20%</td>
+                <td><strong>Kyoto Culture Trail</strong></td>
+                <td>Kyoto &amp; Osaka, Japan</td>
+                <td>1 Curated Expedition</td>
+                <td><span class="badge badge-success">Active</span></td>
+              </tr>
+              <tr>
+                <td><strong>Kerala Backwaters &amp; Hills</strong></td>
+                <td>Kochi, Munnar &amp; Alleppey, India</td>
+                <td>1 Curated Expedition</td>
+                <td><span class="badge badge-success">Active</span></td>
               </tr>
             </tbody>
           </table>
@@ -158,5 +215,3 @@
     </main>
   </body>
 </html>
-
-

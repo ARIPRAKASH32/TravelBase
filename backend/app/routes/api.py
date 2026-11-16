@@ -134,7 +134,7 @@ def get_profile():
     if not user_id:
         return jsonify({"error": "Authentication required"}), 401
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
@@ -155,7 +155,7 @@ def update_profile():
     if not user_id:
         return jsonify({"error": "Authentication required"}), 401
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
@@ -223,7 +223,7 @@ def create_booking():
 
     # Determine user
     if user_id:
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
     else:
         email = (data.get("email") or "").strip().lower()
         if not email or not EMAIL_PATTERN.fullmatch(email):

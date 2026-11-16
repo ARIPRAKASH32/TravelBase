@@ -23,15 +23,20 @@
 }
 .trust-item strong {
   display: block;
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 1.85rem;
+  font-weight: 800;
   color: var(--tb-gold);
   line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 .trust-item span {
+  font-family: var(--font-sans);
   font-size: 0.8rem;
-  opacity: 0.75;
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  color: rgba(247, 244, 238, 0.85);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 .trust-divider {
   width: 1px;
@@ -86,17 +91,19 @@
   color: #fff;
 }
 .destination-label h3 {
-  font-family: var(--font-serif);
-  font-size: 1.75rem;
-  font-weight: 400;
+  font-family: var(--font-sans);
+  font-size: 1.65rem;
+  font-weight: 700;
   color: #fff;
   margin: 0 0 4px;
-  line-height: 1.1;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
 }
 .destination-label span {
   font-family: var(--font-sans);
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.82);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
   letter-spacing: 0.02em;
 }
 
@@ -136,18 +143,20 @@
   color: var(--tb-gold);
 }
 .feature h3 {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--tb-ink, #1A2B22);
-  margin: 0 0 12px;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
 }
 .feature p {
   font-family: var(--font-sans);
   font-size: 0.95rem;
+  font-weight: 400;
   color: var(--tb-muted, #6B7362);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* ----------------------------------------------------------
@@ -207,9 +216,11 @@
 .cta-banner h2 {
   font-family: var(--font-serif);
   color: var(--tb-ivory);
-  font-size: 2.5rem;
+  font-size: 2.6rem;
+  font-weight: 700;
   margin: 8px 0 12px;
   line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 .cta-banner p {
   color: rgba(249, 243, 227, 0.75);
@@ -262,19 +273,20 @@
 }
 .hero-content h1 {
   font-family: var(--font-serif);
-  font-size: clamp(2.8rem, 6vw, 5rem);
-  font-weight: 300;
+  font-size: clamp(3rem, 6.2vw, 5.2rem);
+  font-weight: 700;
   color: #fff;
-  line-height: 1.1;
+  line-height: 1.08;
   margin: 0 0 20px;
+  letter-spacing: -0.02em;
 }
 .hero-content > p {
   font-family: var(--font-sans);
-  font-weight: 300;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.88);
-  max-width: 500px;
-  line-height: 1.65;
+  font-weight: 450;
+  font-size: 1.18rem;
+  color: rgba(255, 255, 255, 0.94);
+  max-width: 540px;
+  line-height: 1.7;
   margin: 0;
 }
 .search-panel {
