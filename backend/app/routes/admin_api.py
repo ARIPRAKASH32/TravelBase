@@ -23,6 +23,7 @@ def verify_admin_session():
 def get_admin_stats():
     total_customers = User.query.filter_by(role="customer").count()
     total_packages = Package.query.count()
+    total_destinations = Destination.query.count()
     total_bookings = Booking.query.count()
     confirmed_bookings = Booking.query.filter_by(booking_status="confirmed").count()
     pending_bookings = Booking.query.filter_by(booking_status="pending").count()
@@ -55,6 +56,7 @@ def get_admin_stats():
     return jsonify({
         "total_customers": total_customers,
         "total_packages": total_packages,
+        "total_destinations": total_destinations,
         "total_bookings": total_bookings,
         "confirmed_bookings": confirmed_bookings,
         "pending_bookings": pending_bookings,

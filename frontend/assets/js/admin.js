@@ -124,6 +124,15 @@ function escapeHTML(value) {
   });
 }
 
+function formatINRCompact(val) {
+  if (val >= 10000000) return "₹" + (val / 10000000).toFixed(1).replace(/\.0$/, "") + "Cr";
+  if (val >= 100000) return "₹" + (val / 100000).toFixed(1).replace(/\.0$/, "") + "L";
+  if (val >= 1000) return "₹" + (val / 1000).toFixed(0) + "k";
+  return "₹" + val;
+}
+
+let bookingStatusChartInstance = null;
+
 function setupCharts(page) {
   if (!["dashboard", "reports"].includes(page) || typeof Chart === "undefined") {
     return;
@@ -144,14 +153,16 @@ function setupCharts(page) {
               4210000, 3580000, 4960000, 5275000,
             ],
             backgroundColor: "#1E3A2B",
-            borderRadius: 3,
+            borderRadius: 6,
+            borderSkipped: false,
             yAxisID: "revenue",
           },
           {
             label: "Bookings",
             data: [18, 24, 21, 30, 34, 29, 39, 42],
             backgroundColor: "#C0A84A",
-            borderRadius: 3,
+            borderRadius: 6,
+            borderSkipped: false,
             yAxisID: "bookings",
           },
         ],
@@ -159,8 +170,30 @@ function setupCharts(page) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 20,
+            right: 16,
+            top: 10,
+            bottom: 6,
+          },
+        },
         plugins: {
-          legend: { position: "bottom" },
+          legend: {
+            position: "bottom",
+            labels: {
+              boxWidth: 12,
+              boxHeight: 12,
+              usePointStyle: true,
+              pointStyle: "circle",
+              padding: 16,
+              font: {
+                family: "'Plus Jakarta Sans', sans-serif",
+                size: 12,
+                weight: 600,
+              },
+            },
+          },
           tooltip: {
             callbacks: {
               label(context) {
@@ -175,10 +208,14 @@ function setupCharts(page) {
         scales: {
           revenue: {
             beginAtZero: true,
-            grid: { color: "#edf1f4" },
+            grid: { color: "rgba(0, 0, 0, 0.05)" },
             ticks: {
               callback(value) {
-                return formatINR(value);
+                return formatINRCompact(value);
+              },
+              font: {
+                family: "'Plus Jakarta Sans', sans-serif",
+                size: 11,
               },
             },
           },
@@ -186,6 +223,22 @@ function setupCharts(page) {
             beginAtZero: true,
             position: "right",
             grid: { drawOnChartArea: false },
+            ticks: {
+              font: {
+                family: "'Plus Jakarta Sans', sans-serif",
+                size: 11,
+              },
+            },
+          },
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: {
+                family: "'Plus Jakarta Sans', sans-serif",
+                size: 11,
+                weight: 600,
+              },
+            },
           },
         },
       },
@@ -200,23 +253,40 @@ function setupBookingStatusChart() {
     return;
   }
 
-  new Chart(canvas, {
+  bookingStatusChartInstance = new Chart(canvas, {
     type: "doughnut",
     data: {
-      labels: ["Confirmed", "Pending", "Completed", "Cancelled"],
+      labels: ["Confirmed", "Pending in Review", "Completed", "Cancelled"],
       datasets: [
         {
-          data: [57, 19, 18, 6],
-          backgroundColor: ["#1E3A2B", "#C0A84A", "#6B7A6E", "#A04040"],
-          borderWidth: 0,
+          data: [2, 5, 0, 0],
+          backgroundColor: ["#10B981", "#F59E0B", "#0D9488", "#EF4444"],
+          hoverBackgroundColor: ["#059669", "#D97706", "#0F766E", "#DC2626"],
+          borderWidth: 2,
+          borderColor: "#FFFFFF",
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: "68%",
       plugins: {
-        legend: { position: "bottom" },
+        legend: {
+          position: "bottom",
+          labels: {
+            boxWidth: 12,
+            boxHeight: 12,
+            usePointStyle: true,
+            pointStyle: "circle",
+            padding: 16,
+            font: {
+              family: "'Plus Jakarta Sans', sans-serif",
+              size: 12,
+              weight: 500,
+            },
+          },
+        },
       },
     },
   });
@@ -329,17 +399,105 @@ function setupAdmin() {
 async function loadLiveAdminStats() {
   try {
     const res = await fetch("/api/admin/stats", { credentials: "same-origin" });
-    if (res.ok) {
-      const stats = await res.json();
+    if (!res.ok) return;
+
+    const stats = await res.json();
+
+    // 1. Precise explicit ID-based binding for stat cards
+    const valRevenue = document.querySelector("#val-revenue");
+    if (valRevenue) {
+      valRevenue.textContent = formatINR(stats.total_revenue || 0);
+    }
+    const subRevenue = document.querySelector("#sub-revenue");
+    if (subRevenue) {
+      const conf = stats.confirmed_bookings || 0;
+      subRevenue.innerHTML = `<i class="bi bi-check2-circle"></i> From ${conf} confirmed reservation${conf === 1 ? "" : "s"} in MySQL`;
+    }
+
+    const valBookings = document.querySelector("#val-bookings");
+    if (valBookings) {
+      valBookings.textContent = stats.total_bookings ?? 0;
+    }
+    const subBookings = document.querySelector("#sub-bookings");
+    if (subBookings) {
+      subBookings.innerHTML = `<span class="badge-dot dot-success"></span> ${stats.confirmed_bookings || 0} confirmed • ${stats.pending_bookings || 0} in review`;
+    }
+
+    const valPackages = document.querySelector("#val-packages");
+    if (valPackages) {
+      valPackages.textContent = stats.total_packages ?? 0;
+    }
+    const subPackages = document.querySelector("#sub-packages");
+    if (subPackages) {
+      subPackages.innerHTML = `<i class="bi bi-globe-asia-australia"></i> Across ${stats.total_destinations || 10} global destinations`;
+    }
+
+    const valCustomers = document.querySelector("#val-customers");
+    if (valCustomers) {
+      valCustomers.textContent = stats.total_customers ?? 0;
+    }
+    const subCustomers = document.querySelector("#sub-customers");
+    if (subCustomers) {
+      const custCount = stats.total_customers ?? 0;
+      subCustomers.innerHTML = `<i class="bi bi-patch-check"></i> ${custCount} verified traveler profile${custCount === 1 ? "" : "s"}`;
+    }
+
+    // Fallback for legacy generic strong selector if custom IDs aren't found
+    if (!valRevenue && !valBookings) {
       const statValues = document.querySelectorAll(".stat-card strong");
       if (statValues.length >= 4) {
-        statValues[0].textContent = stats.total_bookings;
-        statValues[1].textContent = formatINR(stats.total_revenue);
-        statValues[2].textContent = stats.total_customers;
-        statValues[3].textContent = stats.total_packages;
+        statValues[0].textContent = formatINR(stats.total_revenue || 0);
+        statValues[1].textContent = stats.total_bookings ?? 0;
+        statValues[2].textContent = stats.total_packages ?? 0;
+        statValues[3].textContent = stats.total_customers ?? 0;
       }
     }
-  } catch (_) {}
+
+    // 2. Populate Recent Bookings table directly from live MySQL query
+    const recentTbody = document.querySelector("#recent-bookings-rows");
+    if (recentTbody && Array.isArray(stats.recent_bookings) && stats.recent_bookings.length > 0) {
+      recentTbody.innerHTML = stats.recent_bookings
+        .map((b) => {
+          const statusClass =
+            b.status === "confirmed"
+              ? "badge-success"
+              : b.status === "cancelled"
+              ? "badge-danger"
+              : "badge-warning";
+          const formattedDate = b.date
+            ? new Date(b.date).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "—";
+
+          return `
+            <tr>
+              <td><span class="booking-code-chip">${escapeHTML(b.code)}</span></td>
+              <td><strong>${escapeHTML(b.customer)}</strong></td>
+              <td>${escapeHTML(b.package)}</td>
+              <td>${formattedDate}</td>
+              <td><strong>${formatINR(b.amount)}</strong></td>
+              <td><span class="badge ${statusClass}">${escapeHTML(b.status ? b.status.charAt(0).toUpperCase() + b.status.slice(1) : "Pending")}</span></td>
+            </tr>`;
+        })
+        .join("");
+    }
+
+    // 3. Update Doughnut Chart with real MySQL data
+    if (bookingStatusChartInstance) {
+      bookingStatusChartInstance.data.datasets[0].data = [
+        stats.confirmed_bookings || 0,
+        stats.pending_bookings || 0,
+        0,
+        0,
+      ];
+      bookingStatusChartInstance.update();
+    }
+  } catch (err) {
+    console.warn("Failed to load live admin stats:", err);
+  }
 }
 
 function showAdminModal(title, content, onSubmit) {
