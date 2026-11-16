@@ -1,5 +1,6 @@
 from decimal import Decimal
-from flask import Blueprint, jsonify, session
+import re
+from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
 
 from backend.app import db
@@ -60,3 +61,82 @@ def get_admin_stats():
         "total_revenue": total_revenue,
         "recent_bookings": recent_list,
     })
+
+
+@admin_api_bp.post("/packages")
+def create_admin_package():
+    data = request.get_json(silent=True) or request.form.to_dict()
+    name = (data.get("name") or data.get("package_name") or "").strip()
+    if not name:
+        return jsonify({"error": "Package name is required"}), 400
+
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    if Package.query.filter_by(slug=slug).first():
+        slug = f"{slug}-{Package.query.count() + 1}"
+
+    dest_name = (data.get("destination") or "").strip()
+    dest = Destination.query.filter(func.lower(Destination.name) == dest_name.lower()).first()
+    if not dest and dest_name:
+        dest = Destination(name=dest_name, location=dest_name, description="")
+        db.session.add(dest)
+        db.session.flush()
+
+    pkg = Package(
+        slug=slug,
+        destination_id=dest.id if dest else None,
+        package_name=name,
+        description=data.get("description", ""),
+        duration=int(data.get("days") or data.get("duration") or 5),
+        nights=int(data.get("nights") or 4),
+        category=data.get("category", "General"),
+        price=Decimal(str(data.get("price") or 25000)),
+        image=data.get("image", ""),
+        status="active",
+        includes=data.get("includes") if isinstance(data.get("includes"), list) else [],
+        excludes=data.get("excludes") if isinstance(data.get("excludes"), list) else [],
+        hotel=data.get("hotel", ""),
+        transport=data.get("transport", ""),
+        itinerary=data.get("itinerary") if isinstance(data.get("itinerary"), list) else [],
+        policy=data.get("policy", ""),
+    )
+    db.session.add(pkg)
+    db.session.commit()
+
+    return jsonify({"success": True, "message": f"Package {name} created successfully", "slug": slug}), 201
+
+
+@admin_api_bp.put("/packages/<slug>")
+def update_admin_package(slug):
+    pkg = Package.query.filter_by(slug=slug).first()
+    if not pkg:
+        return jsonify({"error": "Package not found"}), 404
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    if "name" in data or "package_name" in data:
+        pkg.package_name = data.get("name") or data.get("package_name")
+    if "price" in data:
+        pkg.price = Decimal(str(data["price"]))
+    if "description" in data:
+        pkg.description = data["description"]
+    if "category" in data:
+        pkg.category = data["category"]
+    if "days" in data or "duration" in data:
+        pkg.duration = int(data.get("days") or data.get("duration"))
+    if "image" in data:
+        pkg.image = data["image"]
+    if "status" in data:
+        pkg.status = data["status"]
+
+    db.session.commit()
+    return jsonify({"success": True, "message": "Package updated successfully"})
+
+
+@admin_api_bp.delete("/packages/<slug>")
+def delete_admin_package(slug):
+    pkg = Package.query.filter_by(slug=slug).first()
+    if not pkg:
+        return jsonify({"error": "Package not found"}), 404
+
+    pkg.status = "archived"
+    db.session.commit()
+    return jsonify({"success": True, "message": "Package archived successfully"})
