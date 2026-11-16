@@ -515,6 +515,61 @@ function packageCard(item) {
     </article>`;
 }
 
+function showToast(message, type = "info", duration = 3500) {
+  let container = document.querySelector("#tb-toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "tb-toast-container";
+    container.className = "tb-toast-container";
+    container.setAttribute("aria-live", "polite");
+    container.setAttribute("aria-atomic", "true");
+    document.body.appendChild(container);
+  }
+
+  const icons = {
+    success: "bi-check-circle-fill",
+    error: "bi-exclamation-octagon-fill",
+    warning: "bi-exclamation-triangle-fill",
+    info: "bi-info-circle-fill"
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `tb-toast tb-toast-${type}`;
+  toast.setAttribute("role", "status");
+  toast.innerHTML = `
+    <div class="tb-toast-icon"><i class="bi ${icons[type] || icons.info}"></i></div>
+    <div class="tb-toast-content">${escapeHTML(message)}</div>
+    <button type="button" class="tb-toast-close" aria-label="Close notification">
+      <i class="bi bi-x"></i>
+    </button>
+  `;
+
+  const closeBtn = toast.querySelector(".tb-toast-close");
+  const removeToast = () => {
+    toast.classList.add("tb-toast-fadeout");
+    setTimeout(() => {
+      toast.remove();
+      if (!container.children.length) {
+        container.remove();
+      }
+    }, 280);
+  };
+
+  closeBtn.addEventListener("click", removeToast);
+  container.appendChild(toast);
+
+  // Trigger enter animation
+  requestAnimationFrame(() => {
+    toast.classList.add("tb-toast-visible");
+  });
+
+  if (duration > 0) {
+    setTimeout(removeToast, duration);
+  }
+}
+
+window.showToast = showToast;
+
 function showMessage(element, text, type) {
   if (!element) {
     return;
@@ -543,6 +598,7 @@ function setupContactForm() {
         "Please check the required fields and try again.",
         "error",
       );
+      showToast("Please check the required fields and try again.", "error");
       return;
     }
 
@@ -551,6 +607,7 @@ function setupContactForm() {
       "Thanks for getting in touch. This demo does not send messages to a server.",
       "success",
     );
+    showToast("Thank you for your enquiry. Our luxury travel concierge will reach out promptly.", "success", 4000);
     form.reset();
   });
 }
