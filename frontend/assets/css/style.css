@@ -349,6 +349,12 @@ input:-webkit-autofill:active {
   transition: all 0.3s ease;
 }
 
+.site-header.header-scrolled {
+  background-color: rgba(247, 244, 238, 0.98);
+  box-shadow: 0 4px 20px rgba(18, 37, 26, 0.08);
+  border-bottom-color: rgba(196, 169, 106, 0.4);
+}
+
 .nav-wrap {
   height: 84px;
   display: flex;
@@ -393,12 +399,14 @@ input:-webkit-autofill:active {
 }
 
 .nav-links a:hover::after,
-.nav-links a[aria-current="page"]::after {
+.nav-links a[aria-current="page"]::after,
+.nav-links a.active::after {
   width: 100%;
 }
 
 .nav-links a:hover,
-.nav-links a[aria-current="page"] {
+.nav-links a[aria-current="page"],
+.nav-links a.active {
   color: var(--tb-gold-dark);
 }
 

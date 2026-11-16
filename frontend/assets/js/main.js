@@ -372,6 +372,12 @@ function renderSiteChrome() {
   const header = document.querySelector("#site-header");
 
   if (header) {
+    const currentPath = window.location.pathname;
+    const isHome = currentPath.endsWith("index.html") || currentPath.endsWith("/") || currentPath === "" || currentPath.endsWith("TravelBase/") || currentPath.endsWith("TravelBase-main/");
+    const isAbout = currentPath.includes("about.html");
+    const isPackages = currentPath.includes("packages.html") || currentPath.includes("package-details.html");
+    const isContact = currentPath.includes("contact.html");
+
     header.className = "site-header";
     header.innerHTML = `
       <div class="container nav-wrap">
@@ -408,20 +414,30 @@ function renderSiteChrome() {
             </span>
           </div>
         </a>
-        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav-links">
           <i class="bi bi-list"></i>
         </button>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="${route("index.html")}">Home</a>
-          <a href="${route("pages/about.html")}">About</a>
-          <a href="${route("pages/packages.html")}">Packages</a>
-          <a href="${route("pages/contact.html")}">Contact</a>
+        <nav id="main-nav-links" class="nav-links" aria-label="Main navigation">
+          <a class="${isHome ? "active" : ""}" ${isHome ? 'aria-current="page"' : ""} href="${route("index.html")}">Home</a>
+          <a class="${isAbout ? "active" : ""}" ${isAbout ? 'aria-current="page"' : ""} href="${route("pages/about.html")}">About</a>
+          <a class="${isPackages ? "active" : ""}" ${isPackages ? 'aria-current="page"' : ""} href="${route("pages/packages.html")}">Packages</a>
+          <a class="${isContact ? "active" : ""}" ${isContact ? 'aria-current="page"' : ""} href="${route("pages/contact.html")}">Contact</a>
         </nav>
         <div class="nav-actions">
           <a class="btn btn-outline btn-sm" href="${route("pages/login.html")}">Sign In</a>
           <a class="btn btn-primary btn-sm" href="${route("pages/packages.html")}">Explore Journeys</a>
         </div>
       </div>`;
+
+    const handleHeaderScroll = () => {
+      if (window.scrollY > 20) {
+        header.classList.add("header-scrolled");
+      } else {
+        header.classList.remove("header-scrolled");
+      }
+    };
+    window.addEventListener("scroll", handleHeaderScroll, { passive: true });
+    handleHeaderScroll();
   }
 
   const footer = document.querySelector("#site-footer");
