@@ -372,6 +372,12 @@ function renderSiteChrome() {
   const header = document.querySelector("#site-header");
 
   if (header) {
+    const currentPath = window.location.pathname;
+    const isHome = currentPath.endsWith("index.html") || currentPath.endsWith("/") || currentPath === "" || currentPath.endsWith("TravelBase/") || currentPath.endsWith("TravelBase-main/");
+    const isAbout = currentPath.includes("about.html");
+    const isPackages = currentPath.includes("packages.html") || currentPath.includes("package-details.html");
+    const isContact = currentPath.includes("contact.html");
+
     header.className = "site-header";
     header.innerHTML = `
       <div class="container nav-wrap">
@@ -408,20 +414,30 @@ function renderSiteChrome() {
             </span>
           </div>
         </a>
-        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav-links">
           <i class="bi bi-list"></i>
         </button>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="${route("index.html")}">Home</a>
-          <a href="${route("pages/about.html")}">About</a>
-          <a href="${route("pages/packages.html")}">Packages</a>
-          <a href="${route("pages/contact.html")}">Contact</a>
+        <nav id="main-nav-links" class="nav-links" aria-label="Main navigation">
+          <a class="${isHome ? "active" : ""}" ${isHome ? 'aria-current="page"' : ""} href="${route("index.html")}">Home</a>
+          <a class="${isAbout ? "active" : ""}" ${isAbout ? 'aria-current="page"' : ""} href="${route("pages/about.html")}">About</a>
+          <a class="${isPackages ? "active" : ""}" ${isPackages ? 'aria-current="page"' : ""} href="${route("pages/packages.html")}">Packages</a>
+          <a class="${isContact ? "active" : ""}" ${isContact ? 'aria-current="page"' : ""} href="${route("pages/contact.html")}">Contact</a>
         </nav>
         <div class="nav-actions">
           <a class="btn btn-outline btn-sm" href="${route("pages/login.html")}">Sign In</a>
           <a class="btn btn-primary btn-sm" href="${route("pages/packages.html")}">Explore Journeys</a>
         </div>
       </div>`;
+
+    const handleHeaderScroll = () => {
+      if (window.scrollY > 20) {
+        header.classList.add("header-scrolled");
+      } else {
+        header.classList.remove("header-scrolled");
+      }
+    };
+    window.addEventListener("scroll", handleHeaderScroll, { passive: true });
+    handleHeaderScroll();
   }
 
   const footer = document.querySelector("#site-footer");
@@ -479,25 +495,87 @@ function renderSiteChrome() {
 
 function packageCard(item) {
   const detailsUrl = `${route("pages/package-details.html")}?id=${encodeURIComponent(item.id)}`;
+  const nights = item.nights || Math.max(1, item.days - 1);
+  const category = item.category || "Curated";
+  const snippet = item.description ? (item.description.length > 90 ? item.description.slice(0, 90) + "..." : item.description) : "";
 
   return `
-    <article class="package-card">
-      <a href="${detailsUrl}">
-        <img src="${item.image}" alt="${item.destination}" loading="lazy">
-      </a>
+    <article class="package-card" data-category="${escapeHTML(category.toLowerCase())}">
+      <div class="package-thumb-container">
+        <a href="${detailsUrl}" class="package-thumb-link" aria-label="View details for ${escapeHTML(item.name)}">
+          <img src="${item.image}" alt="${escapeHTML(item.destination)}" loading="lazy">
+        </a>
+        <span class="package-card-badge">${escapeHTML(category)}</span>
+      </div>
       <div class="package-body">
         <div class="package-meta">
-          <span><i class="bi bi-geo-alt"></i> ${item.destination}</span>
-          <span>${item.days} days</span>
+          <span><i class="bi bi-geo-alt"></i> ${escapeHTML(item.destination)}</span>
+          <span class="package-duration-pill"><i class="bi bi-clock-history"></i> ${item.days}D / ${nights}N</span>
         </div>
-        <h3>${item.name}</h3>
+        <h3><a href="${detailsUrl}">${escapeHTML(item.name)}</a></h3>
+        ${snippet ? `<p class="package-snippet">${escapeHTML(snippet)}</p>` : ""}
         <div class="package-footer">
           <div class="package-price">${formatINR(item.price)} <small>/ person</small></div>
-          <a class="btn btn-outline btn-sm" href="${detailsUrl}">View details</a>
+          <a class="btn btn-outline btn-sm" href="${detailsUrl}">View Details <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </article>`;
 }
+
+function showToast(message, type = "info", duration = 3500) {
+  let container = document.querySelector("#tb-toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "tb-toast-container";
+    container.className = "tb-toast-container";
+    container.setAttribute("aria-live", "polite");
+    container.setAttribute("aria-atomic", "true");
+    document.body.appendChild(container);
+  }
+
+  const icons = {
+    success: "bi-check-circle-fill",
+    error: "bi-exclamation-octagon-fill",
+    warning: "bi-exclamation-triangle-fill",
+    info: "bi-info-circle-fill"
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `tb-toast tb-toast-${type}`;
+  toast.setAttribute("role", "status");
+  toast.innerHTML = `
+    <div class="tb-toast-icon"><i class="bi ${icons[type] || icons.info}"></i></div>
+    <div class="tb-toast-content">${escapeHTML(message)}</div>
+    <button type="button" class="tb-toast-close" aria-label="Close notification">
+      <i class="bi bi-x"></i>
+    </button>
+  `;
+
+  const closeBtn = toast.querySelector(".tb-toast-close");
+  const removeToast = () => {
+    toast.classList.add("tb-toast-fadeout");
+    setTimeout(() => {
+      toast.remove();
+      if (!container.children.length) {
+        container.remove();
+      }
+    }, 280);
+  };
+
+  closeBtn.addEventListener("click", removeToast);
+  container.appendChild(toast);
+
+  // Trigger enter animation
+  requestAnimationFrame(() => {
+    toast.classList.add("tb-toast-visible");
+  });
+
+  if (duration > 0) {
+    setTimeout(removeToast, duration);
+  }
+}
+
+window.showToast = showToast;
 
 function showMessage(element, text, type) {
   if (!element) {
@@ -527,6 +605,7 @@ function setupContactForm() {
         "Please check the required fields and try again.",
         "error",
       );
+      showToast("Please check the required fields and try again.", "error");
       return;
     }
 
@@ -535,13 +614,47 @@ function setupContactForm() {
       "Thanks for getting in touch. This demo does not send messages to a server.",
       "success",
     );
+    showToast("Thank you for your enquiry. Our luxury travel concierge will reach out promptly.", "success", 4000);
     form.reset();
+  });
+}
+
+function setupBackToTop() {
+  const existingBtn = document.querySelector("#back-to-top");
+  if (existingBtn) return;
+
+  const btn = document.createElement("button");
+  btn.id = "back-to-top";
+  btn.className = "back-to-top";
+  btn.setAttribute("aria-label", "Scroll to top of page");
+  btn.setAttribute("type", "button");
+  btn.innerHTML = `<i class="bi bi-arrow-up" aria-hidden="true"></i>`;
+
+  document.body.appendChild(btn);
+
+  const toggleVisibility = () => {
+    if (window.scrollY > 300) {
+      btn.classList.add("visible");
+    } else {
+      btn.classList.remove("visible");
+    }
+  };
+
+  window.addEventListener("scroll", toggleVisibility, { passive: true });
+  toggleVisibility();
+
+  btn.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   renderSiteChrome();
   setupContactForm();
+  setupBackToTop();
 
   document.querySelectorAll("[data-year]").forEach((element) => {
     element.textContent = new Date().getFullYear();
