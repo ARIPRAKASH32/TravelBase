@@ -108,113 +108,7 @@
   });
 }
 
-const adminPackages = [
-  {
-    id: "bali-escape",
-    name: "Bali Island Escape",
-    destination: "Bali, Indonesia",
-    days: 7,
-    price: 129000,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=300&q=75",
-  },
-  {
-    id: "swiss-alpine",
-    name: "Swiss Alpine Discovery",
-    destination: "Lucerne, Switzerland",
-    days: 8,
-    price: 248000,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=300&q=75",
-  },
-  {
-    id: "kyoto-culture",
-    name: "Kyoto Culture Trail",
-    destination: "Kyoto, Japan",
-    days: 6,
-    price: 174000,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=300&q=75",
-  },
-  {
-    id: "golden-triangle",
-    name: "Golden Triangle & Taj Mahal",
-    destination: "Delhi, Agra & Jaipur, India",
-    days: 6,
-    price: 48900,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=300&q=75",
-  },
-  {
-    id: "kerala-backwaters",
-    name: "Kerala Backwaters & Hill Country",
-    destination: "Kochi, Munnar & Alleppey, India",
-    days: 7,
-    price: 42900,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=300&q=75",
-  },
-  {
-    id: "jaipur-heritage",
-    name: "Jaipur Heritage Weekend",
-    destination: "Jaipur, Rajasthan, India",
-    days: 4,
-    price: 26900,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=300&q=75",
-  },
-];
 
-const adminDestinations = [
-  {
-    name: "Bali",
-    location: "Indonesia",
-    description: "Island culture and coastline",
-    image:
-      "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=160&q=70",
-  },
-  {
-    name: "Lucerne",
-    location: "Switzerland",
-    description: "Lakeside town in the Alps",
-    image:
-      "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=160&q=70",
-  },
-  {
-    name: "Kyoto",
-    location: "Japan",
-    description: "Historic temples and old lanes",
-    image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=160&q=70",
-  },
-  {
-    name: "Agra",
-    location: "Uttar Pradesh, India",
-    description: "Home of the Taj Mahal",
-    image:
-      "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=160&q=70",
-  },
-  {
-    name: "Alleppey",
-    location: "Kerala, India",
-    description: "Backwater cruises and houseboats",
-    image:
-      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=160&q=70",
-  },
-  {
-    name: "Jaipur",
-    location: "Rajasthan, India",
-    description: "Forts, palaces and old-city markets",
-    image:
-      "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=160&q=70",
-  },
-];
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => {
@@ -400,6 +294,10 @@ function setupAdmin() {
     setupCustomerActions();
   }
 
+  if (page === "payments") {
+    setupPaymentActions();
+  }
+
   if (document.querySelector("#table-search")) {
     setupTableSearch();
   }
@@ -480,278 +378,418 @@ function showAdminModal(title, content, onSubmit) {
   });
 }
 
-function setupPackageManagement() {
-  const tableBody = document.querySelector("#admin-package-rows");
-
-  // Attempt live sync from MySQL database
-  async function loadBackendPackages() {
-    try {
-      const res = await fetch("/api/packages");
-      if (res.ok) {
-        const liveList = await res.json();
-        if (Array.isArray(liveList) && liveList.length > 0) {
-          adminPackages = liveList.map((p) => ({
-            id: p.id,
-            name: p.name,
-            destination: p.destination,
-            price: p.price,
-            days: p.days,
-            status: p.status === "active" ? "Active" : "Draft",
-            image: p.image,
-            category: p.category,
-            description: p.description,
-          }));
-          renderPackages();
-        }
-      }
-    } catch (_) {}
+async function getAdminCsrfToken() {
+  try {
+    const res = await fetch("/csrf-token", { credentials: "same-origin" });
+    if (res.ok) {
+      const data = await res.json();
+      return data.token;
+    }
+  } catch (err) {
+    console.warn("CSRF token fetch failed:", err);
   }
-  loadBackendPackages();
+  return "";
+}
+
+async function setupPackageManagement() {
+  const tableBody = document.querySelector("#admin-package-rows");
+  if (!tableBody) return;
+
+  let livePackages = [];
 
   const fields = `
     <div class="form-grid">
       <div class="field">
         <label>Package name</label>
-        <input name="name" required>
+        <input name="name" required placeholder="e.g. Kashmir Paradise">
       </div>
       <div class="field">
         <label>Destination</label>
-        <input name="destination" required>
+        <input name="destination" required placeholder="e.g. Srinagar & Gulmarg, India">
       </div>
       <div class="field">
         <label>Price per person (INR)</label>
-        <input name="price" type="number" min="1" required>
+        <input name="price" type="number" min="1" required placeholder="45000">
       </div>
       <div class="field">
         <label>Duration (days)</label>
-        <input name="days" type="number" min="1" required>
+        <input name="days" type="number" min="1" required placeholder="6">
       </div>
       <div class="field">
         <label>Status</label>
         <select name="status">
-          <option>Active</option>
-          <option>Draft</option>
+          <option value="active">Active</option>
+          <option value="draft">Draft</option>
         </select>
       </div>
       <div class="field">
         <label>Image URL</label>
-        <input name="image" type="url" required>
+        <input name="image" type="url" required placeholder="https://images.unsplash.com/...">
       </div>
     </div>
-    <p class="notice">Changes stay in this page demo; connect an API to persist package records.</p>
+    <p class="notice"><i class="bi bi-database-check"></i> Changes are synchronized directly with your MySQL database.</p>
     <div style="margin-top: 16px">
-      <button class="btn btn-primary" type="submit">Save package</button>
+      <button class="btn btn-primary" type="submit"><i class="bi bi-check-circle"></i> Save package</button>
     </div>`;
 
+  async function loadBackendPackages() {
+    try {
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split"></i> Loading packages from MySQL...</td></tr>`;
+      const res = await fetch("/api/packages");
+      if (res.ok) {
+        const liveList = await res.json();
+        if (Array.isArray(liveList)) {
+          livePackages = liveList;
+        }
+      }
+      renderPackages();
+    } catch (err) {
+      console.error("Failed to load packages:", err);
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load packages from MySQL.</td></tr>`;
+    }
+  }
+
   function renderPackages() {
-    tableBody.innerHTML = adminPackages
+    if (!livePackages || livePackages.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No packages found in MySQL. Click "Add package" to create one.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = livePackages
       .map(
-        (trip, index) => `
-          <tr>
+        (trip) => `
+          <tr data-pkg-id="${trip.id}">
             <td>
               <div class="table-img-name">
-                <img class="thumb" src="${escapeHTML(trip.image)}" alt="">
+                <img class="thumb" src="${escapeHTML(trip.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=160&q=70')}" alt="">
                 <strong>${escapeHTML(trip.name)}</strong>
               </div>
             </td>
-            <td>${escapeHTML(trip.destination)}</td>
+            <td>${escapeHTML(trip.destination || "Flexible")}</td>
             <td>${formatINR(Number(trip.price))}</td>
             <td>${trip.days} days</td>
             <td>
-              <span class="badge ${trip.status === "Active" ? "badge-success" : "badge-warning"}">
-                ${escapeHTML(trip.status)}
+              <span class="badge ${trip.status === "active" || trip.status === "Active" ? "badge-success" : "badge-warning"}">
+                ${escapeHTML(trip.status || "active")}
               </span>
             </td>
             <td>
               <div class="table-actions">
-                <button class="btn btn-outline btn-sm" data-edit="${index}"><i class="bi bi-pencil"></i> Edit</button>
-                <button class="btn btn-outline btn-sm" data-delete="${index}"><i class="bi bi-trash"></i> Delete</button>
+                <button class="btn btn-outline btn-sm" data-edit-pkg="${trip.id}"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-outline btn-sm" data-delete-pkg="${trip.id}"><i class="bi bi-trash"></i> Archive</button>
               </div>
             </td>
           </tr>`,
       )
       .join("");
 
-    tableBody.querySelectorAll("[data-edit]").forEach((button) => {
+    tableBody.querySelectorAll("[data-edit-pkg]").forEach((button) => {
       button.addEventListener("click", () => {
-        openPackageForm(Number(button.dataset.edit));
+        const slug = button.dataset.editPkg;
+        const pkg = livePackages.find((p) => p.id === slug);
+        if (pkg) openPackageForm(pkg);
       });
     });
 
-    tableBody.querySelectorAll("[data-delete]").forEach((button) => {
-      button.addEventListener("click", () => {
-        if (!confirm("Delete this package from the demo list?")) {
+    tableBody.querySelectorAll("[data-delete-pkg]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const slug = button.dataset.deletePkg;
+        const pkg = livePackages.find((p) => p.id === slug);
+        const name = pkg ? pkg.name : slug;
+
+        if (!confirm(`Archive / remove package "${name}" from MySQL?`)) {
           return;
         }
 
-        adminPackages.splice(Number(button.dataset.delete), 1);
-        renderPackages();
+        try {
+          const token = await getAdminCsrfToken();
+          const res = await fetch(`/api/admin/packages/${slug}`, {
+            method: "DELETE",
+            headers: {
+              ...(token ? { "X-CSRF-Token": token } : {}),
+            },
+            credentials: "same-origin",
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            if (window.showToast) window.showToast(data.message || `Package archived in MySQL`, "success");
+            await loadBackendPackages();
+          } else {
+            alert(data.error || "Could not delete package.");
+          }
+        } catch (err) {
+          console.error("Delete package failed", err);
+          alert("Network error deleting package.");
+        }
       });
     });
   }
 
-  function openPackageForm(index) {
-    const packageData =
-      index === null
-        ? {
-            name: "",
-            destination: "",
-            price: "",
-            days: "",
-            status: "Active",
-            image: "",
-          }
-        : adminPackages[index];
+  function openPackageForm(pkg) {
+    const isNew = !pkg || !pkg.id;
+    const initialData = pkg
+      ? {
+          name: pkg.name,
+          destination: pkg.destination,
+          price: pkg.price,
+          days: pkg.days,
+          status: pkg.status === "active" ? "active" : "draft",
+          image: pkg.image,
+        }
+      : {
+          name: "",
+          destination: "",
+          price: "",
+          days: "",
+          status: "active",
+          image: "",
+        };
 
     showAdminModal(
-      index === null ? "Add package" : "Edit package",
+      isNew ? "Add package to MySQL" : `Edit ${pkg.name}`,
       `<form id="package-edit-form">${fields}</form>`,
-      (formData) => {
-        const updatedPackage = Object.fromEntries(
-          ["name", "destination", "price", "days", "status", "image"].map(
-            (key) => [key, formData.get(key)],
-          ),
-        );
+      async (formData) => {
+        const payload = {
+          name: formData.get("name")?.trim(),
+          destination: formData.get("destination")?.trim(),
+          price: Number(formData.get("price")),
+          days: Number(formData.get("days")),
+          status: formData.get("status") || "active",
+          image: formData.get("image")?.trim(),
+        };
 
-        updatedPackage.price = Number(updatedPackage.price);
-        updatedPackage.days = Number(updatedPackage.days);
+        try {
+          const token = await getAdminCsrfToken();
+          const url = isNew ? "/api/admin/packages" : `/api/admin/packages/${pkg.id}`;
+          const method = isNew ? "POST" : "PUT";
 
-        if (index === null) {
-          updatedPackage.id = `demo-${Date.now()}`;
-          adminPackages.unshift(updatedPackage);
-        } else {
-          adminPackages[index] = {
-            ...adminPackages[index],
-            ...updatedPackage,
-          };
+          const res = await fetch(url, {
+            method: method,
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { "X-CSRF-Token": token } : {}),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            if (window.showToast) {
+              window.showToast(isNew ? `Package "${payload.name}" saved to MySQL!` : `Package "${payload.name}" updated!`, "success");
+            }
+            await loadBackendPackages();
+          } else {
+            alert(data.error || "Failed to save package to MySQL.");
+          }
+        } catch (err) {
+          console.error("Package save error", err);
+          alert("Network error connecting to backend.");
         }
-
-        renderPackages();
       },
     );
 
     const form = document.querySelector("#package-edit-form");
-
-    Object.entries(packageData).forEach(([key, value]) => {
-      const field = form.elements.namedItem(key);
-
-      if (field) {
-        field.value = value;
-      }
-    });
+    if (form) {
+      Object.entries(initialData).forEach(([key, value]) => {
+        const el = form.elements.namedItem(key);
+        if (el) el.value = value;
+      });
+    }
   }
 
-  document
-    .querySelector("#add-package")
-    .addEventListener("click", () => openPackageForm(null));
+  const addBtn = document.querySelector("#add-package");
+  if (addBtn) {
+    addBtn.addEventListener("click", () => openPackageForm(null));
+  }
 
-  renderPackages();
+  await loadBackendPackages();
 }
 
-function setupDestinationManagement() {
+async function setupDestinationManagement() {
   const tableBody = document.querySelector("#destination-rows");
+  if (!tableBody) return;
+
+  let liveDestinations = [];
+
   const fields = `
     <div class="form-grid">
       <div class="field">
         <label>Destination name</label>
-        <input name="name" required>
+        <input name="name" required placeholder="e.g. Goa, India">
       </div>
       <div class="field">
         <label>Country / location</label>
-        <input name="location" required>
+        <input name="location" required placeholder="e.g. India">
       </div>
       <div class="field wide">
         <label>Description</label>
-        <textarea name="description" rows="3" required></textarea>
+        <textarea name="description" rows="3" required placeholder="Brief description of the destination..."></textarea>
       </div>
       <div class="field wide">
         <label>Image URL</label>
-        <input name="image" type="url" required>
+        <input name="image" type="url" placeholder="https://images.unsplash.com/...">
       </div>
     </div>
-    <p class="notice">Changes are temporary in this frontend demo.</p>
-    <button class="btn btn-primary" style="margin-top: 15px" type="submit">Save destination</button>`;
+    <p class="notice"><i class="bi bi-database-check"></i> Changes are synchronized directly with your MySQL database.</p>
+    <button class="btn btn-primary" style="margin-top: 15px" type="submit"><i class="bi bi-check-circle"></i> Save destination</button>`;
+
+  async function loadBackendDestinations() {
+    try {
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split"></i> Loading destinations from MySQL...</td></tr>`;
+      const res = await fetch("/api/admin/destinations", { credentials: "same-origin" });
+      if (res.ok) {
+        liveDestinations = await res.json();
+      } else {
+        const pubRes = await fetch("/api/destinations");
+        if (pubRes.ok) {
+          liveDestinations = await pubRes.json();
+        }
+      }
+      renderDestinations();
+    } catch (err) {
+      console.error("Failed to load destinations:", err);
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Failed to load destinations from MySQL. Please refresh.</td></tr>`;
+    }
+  }
 
   function renderDestinations() {
-    tableBody.innerHTML = adminDestinations
+    if (!liveDestinations || liveDestinations.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No destinations found in MySQL database. Click "Add destination" to create one.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = liveDestinations
       .map(
-        (destination, index) => `
-          <tr>
+        (dest) => `
+          <tr data-dest-id="${dest.id}">
             <td>
               <div class="table-img-name">
-                <img class="thumb" src="${escapeHTML(destination.image)}" alt="">
-                <strong>${escapeHTML(destination.name)}</strong>
+                <img class="thumb" src="${escapeHTML(dest.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=160&q=70')}" alt="">
+                <div>
+                  <strong>${escapeHTML(dest.name)}</strong>
+                  ${dest.package_count ? `<br><small class="text-muted">${dest.package_count} package(s)</small>` : ""}
+                </div>
               </div>
             </td>
-            <td>${escapeHTML(destination.location)}</td>
-            <td>${escapeHTML(destination.description)}</td>
+            <td>${escapeHTML(dest.location)}</td>
+            <td>${escapeHTML(dest.description || "—")}</td>
             <td>
               <div class="table-actions">
-                <button class="btn btn-outline btn-sm" data-edit="${index}"><i class="bi bi-pencil"></i> Edit</button>
-                <button class="btn btn-outline btn-sm" data-delete="${index}"><i class="bi bi-trash"></i> Delete</button>
+                <button class="btn btn-outline btn-sm" data-edit-dest="${dest.id}"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-outline btn-sm" data-delete-dest="${dest.id}"><i class="bi bi-trash"></i> Delete</button>
               </div>
             </td>
           </tr>`,
       )
       .join("");
 
-    tableBody.querySelectorAll("[data-edit]").forEach((button) => {
+    tableBody.querySelectorAll("[data-edit-dest]").forEach((button) => {
       button.addEventListener("click", () => {
-        openDestinationForm(Number(button.dataset.edit));
+        const destId = Number(button.dataset.editDest);
+        const dest = liveDestinations.find((d) => d.id === destId);
+        if (dest) {
+          openDestinationForm(dest);
+        }
       });
     });
 
-    tableBody.querySelectorAll("[data-delete]").forEach((button) => {
-      button.addEventListener("click", () => {
-        if (!confirm("Delete this destination from the demo list?")) {
+    tableBody.querySelectorAll("[data-delete-dest]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const destId = Number(button.dataset.deleteDest);
+        const dest = liveDestinations.find((d) => d.id === destId);
+        const destName = dest ? dest.name : `ID #${destId}`;
+
+        if (!confirm(`Are you sure you want to permanently delete destination "${destName}" from MySQL?`)) {
           return;
         }
 
-        adminDestinations.splice(Number(button.dataset.delete), 1);
-        renderDestinations();
+        try {
+          const token = await getAdminCsrfToken();
+          const res = await fetch(`/api/admin/destinations/${destId}`, {
+            method: "DELETE",
+            headers: {
+              ...(token ? { "X-CSRF-Token": token } : {}),
+            },
+            credentials: "same-origin",
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            if (window.showToast) window.showToast(data.message || `Destination deleted from MySQL`, "success");
+            await loadBackendDestinations();
+          } else {
+            alert(data.error || "Could not delete destination.");
+          }
+        } catch (err) {
+          console.error("Delete destination failed", err);
+          alert("Network error deleting destination.");
+        }
       });
     });
   }
 
-  function openDestinationForm(index) {
-    const destination =
-      index === null
-        ? { name: "", location: "", description: "", image: "" }
-        : adminDestinations[index];
+  function openDestinationForm(destination) {
+    const isNew = !destination || !destination.id;
+    const initialData = destination || { name: "", location: "", description: "", image: "" };
 
     showAdminModal(
-      index === null ? "Add destination" : "Edit destination",
-      `<form>${fields}</form>`,
-      (formData) => {
-        const updatedDestination = Object.fromEntries(
-          ["name", "location", "description", "image"].map((key) => [
-            key,
-            formData.get(key),
-          ]),
-        );
+      isNew ? "Add destination to MySQL" : `Edit ${destination.name}`,
+      `<form id="destination-edit-form">${fields}</form>`,
+      async (formData) => {
+        const payload = {
+          name: formData.get("name")?.trim(),
+          location: formData.get("location")?.trim(),
+          description: formData.get("description")?.trim(),
+          image: formData.get("image")?.trim() || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80",
+        };
 
-        if (index === null) {
-          adminDestinations.unshift(updatedDestination);
-        } else {
-          adminDestinations[index] = updatedDestination;
+        try {
+          const token = await getAdminCsrfToken();
+          const url = isNew ? "/api/admin/destinations" : `/api/admin/destinations/${destination.id}`;
+          const method = isNew ? "POST" : "PUT";
+
+          const res = await fetch(url, {
+            method: method,
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { "X-CSRF-Token": token } : {}),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            if (window.showToast) {
+              window.showToast(isNew ? `Destination "${payload.name}" saved to MySQL!` : `Destination "${payload.name}" updated!`, "success");
+            }
+            await loadBackendDestinations();
+          } else {
+            alert(data.error || "Failed to save destination to MySQL.");
+          }
+        } catch (err) {
+          console.error("Failed to save destination:", err);
+          alert("Network error connecting to MySQL backend.");
         }
-
-        renderDestinations();
       },
     );
 
-    const form = document.querySelector(".modal-card form");
-
-    Object.entries(destination).forEach(([key, value]) => {
-      form.elements.namedItem(key).value = value;
-    });
+    const form = document.querySelector("#destination-edit-form");
+    if (form) {
+      Object.entries(initialData).forEach(([key, value]) => {
+        const el = form.elements.namedItem(key);
+        if (el) el.value = value || "";
+      });
+    }
   }
 
-  document
-    .querySelector("#add-destination")
-    .addEventListener("click", () => openDestinationForm(null));
+  const addBtn = document.querySelector("#add-destination");
+  if (addBtn) {
+    addBtn.addEventListener("click", () => openDestinationForm(null));
+  }
 
-  renderDestinations();
+  await loadBackendDestinations();
 }
 
 function setupTableSearch(inputSelector = "#table-search", tableSelector = "#data-table") {
@@ -872,12 +910,108 @@ async function setupBookingActions() {
   });
 }
 
-function setupCustomerActions() {
+async function setupCustomerActions() {
+  const tbody = document.querySelector("#data-table tbody, .panel table tbody");
+  if (!tbody) return;
+
+  try {
+    const res = await fetch("/api/admin/customers", { credentials: "same-origin" });
+    if (res.ok) {
+      const customers = await res.json();
+      if (Array.isArray(customers) && customers.length > 0) {
+        const noticeEl = document.querySelector(".panel .toolbar .notice");
+        if (noticeEl) {
+          noticeEl.textContent = `${customers.length} registered customer accounts in MySQL`;
+        }
+
+        tbody.innerHTML = customers
+          .map(
+            (c) => `
+              <tr data-customer-id="${c.id}">
+                <td><strong>${escapeHTML(c.name)}</strong></td>
+                <td>${escapeHTML(c.email)}</td>
+                <td>${escapeHTML(c.phone || "—")}</td>
+                <td>${c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td>
+                  <button class="btn btn-outline btn-sm" data-customer-detail="${c.id}">
+                    <i class="bi bi-person-lines-fill"></i> View details
+                  </button>
+                </td>
+              </tr>`,
+          )
+          .join("");
+
+        tbody.querySelectorAll("[data-customer-detail]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const cid = Number(btn.dataset.customerDetail);
+            const cust = customers.find((c) => c.id === cid);
+            if (cust) {
+              showAdminModal(
+                `Customer Profile: ${cust.name}`,
+                `<div class="customer-info-box" style="line-height: 1.8;">
+                   <p><strong><i class="bi bi-person"></i> Name:</strong> ${escapeHTML(cust.name)}</p>
+                   <p><strong><i class="bi bi-envelope"></i> Email:</strong> ${escapeHTML(cust.email)}</p>
+                   <p><strong><i class="bi bi-telephone"></i> Phone:</strong> ${escapeHTML(cust.phone || "Not provided")}</p>
+                   <p><strong><i class="bi bi-geo-alt"></i> Address:</strong> ${escapeHTML(cust.address || "Not provided")}</p>
+                   <p><strong><i class="bi bi-ticket-perforated"></i> Total Bookings:</strong> <span class="badge badge-gold">${cust.bookings_count}</span></p>
+                   <p><strong><i class="bi bi-calendar"></i> Registered:</strong> ${cust.created_at ? new Date(cust.created_at).toLocaleString("en-IN") : "—"}</p>
+                 </div>
+                 <div style="margin-top: 15px; text-align: right;">
+                   <button class="btn btn-outline btn-sm modal-close-btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+                 </div>`,
+                () => {},
+              );
+            }
+          });
+        });
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not load customers from MySQL:", err);
+  }
+
+  // Fallback demo handler
   document.querySelectorAll("[data-view-customer]").forEach((button) => {
     button.addEventListener("click", () => {
       alert("Customer details are sample data in this frontend demo.");
     });
   });
+}
+
+async function setupPaymentActions() {
+  const tbody = document.querySelector("#data-table tbody, .panel table tbody");
+  if (!tbody) return;
+
+  try {
+    const res = await fetch("/api/admin/payments", { credentials: "same-origin" });
+    if (res.ok) {
+      const payments = await res.json();
+      if (Array.isArray(payments) && payments.length > 0) {
+        const noticeEl = document.querySelector(".panel .toolbar .notice");
+        if (noticeEl) {
+          noticeEl.textContent = `${payments.length} transactions recorded in MySQL`;
+        }
+
+        tbody.innerHTML = payments
+          .map(
+            (p) => `
+              <tr data-payment-id="${p.id}">
+                <td><strong>${escapeHTML(p.booking_code)}</strong></td>
+                <td>${escapeHTML(p.customer_name)}</td>
+                <td>${formatINR(p.amount)}</td>
+                <td>${escapeHTML(p.method)}</td>
+                <td><span class="badge ${p.status === "completed" ? "badge-success" : "badge-warning"}">${escapeHTML(p.status)}</span></td>
+                <td>${p.date ? new Date(p.date).toLocaleDateString("en-IN") : "—"}</td>
+              </tr>`,
+          )
+          .join("");
+      }
+    }
+  } catch (err) {
+    console.warn("Could not load payments from MySQL:", err);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

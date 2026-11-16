@@ -142,6 +142,22 @@ def delete_admin_package(slug):
     return jsonify({"success": True, "message": "Package archived successfully"})
 
 
+@admin_api_bp.get("/destinations")
+def get_admin_destinations():
+    destinations = Destination.query.order_by(Destination.name.asc()).all()
+    results = []
+    for d in destinations:
+        results.append({
+            "id": d.id,
+            "name": d.name,
+            "location": d.location,
+            "description": d.description or "",
+            "image": d.image or "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=300&q=75",
+            "package_count": len(d.packages) if d.packages else 0,
+        })
+    return jsonify(results)
+
+
 @admin_api_bp.post("/destinations")
 def create_admin_destination():
     data = request.get_json(silent=True) or request.form.to_dict()
@@ -150,11 +166,15 @@ def create_admin_destination():
     if not name:
         return jsonify({"error": "Destination name is required"}), 400
 
+    img = (data.get("image") or "").strip()
+    if not img:
+        img = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80"
+
     dest = Destination(
         name=name,
         location=location,
         description=data.get("description", "").strip(),
-        image=data.get("image", "").strip(),
+        image=img,
     )
     db.session.add(dest)
     db.session.commit()
@@ -163,7 +183,7 @@ def create_admin_destination():
 
 @admin_api_bp.put("/destinations/<int:id>")
 def update_admin_destination(id):
-    dest = Destination.query.get(id)
+    dest = db.session.get(Destination, id)
     if not dest:
         return jsonify({"error": "Destination not found"}), 404
 
@@ -174,7 +194,7 @@ def update_admin_destination(id):
         dest.location = data["location"].strip()
     if "description" in data:
         dest.description = data["description"].strip()
-    if "image" in data:
+    if "image" in data and data["image"]:
         dest.image = data["image"].strip()
 
     db.session.commit()
@@ -183,7 +203,7 @@ def update_admin_destination(id):
 
 @admin_api_bp.delete("/destinations/<int:id>")
 def delete_admin_destination(id):
-    dest = Destination.query.get(id)
+    dest = db.session.get(Destination, id)
     if not dest:
         return jsonify({"error": "Destination not found"}), 404
 
@@ -219,7 +239,7 @@ def get_all_admin_bookings():
 
 @admin_api_bp.patch("/bookings/<int:id>/status")
 def update_booking_status(id):
-    booking = Booking.query.get(id)
+    booking = db.session.get(Booking, id)
     if not booking:
         return jsonify({"error": "Booking not found"}), 404
 
