@@ -392,6 +392,10 @@ function setupAdmin() {
     setupDestinationManagement();
   }
 
+  if (page === "dashboard" || document.querySelector(".stat-card")) {
+    loadLiveAdminStats();
+  }
+
   if (page === "customers") {
     setupCustomerActions();
   }
@@ -422,6 +426,22 @@ function setupAdmin() {
       });
     });
   }
+}
+
+async function loadLiveAdminStats() {
+  try {
+    const res = await fetch("/api/admin/stats", { credentials: "same-origin" });
+    if (res.ok) {
+      const stats = await res.json();
+      const statValues = document.querySelectorAll(".stat-card strong");
+      if (statValues.length >= 4) {
+        statValues[0].textContent = stats.total_bookings;
+        statValues[1].textContent = formatINR(stats.total_revenue);
+        statValues[2].textContent = stats.total_customers;
+        statValues[3].textContent = stats.total_packages;
+      }
+    }
+  } catch (_) {}
 }
 
 function showAdminModal(title, content, onSubmit) {
