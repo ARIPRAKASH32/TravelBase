@@ -3,9 +3,41 @@
     return;
   }
 
-  target.innerHTML = packages.length
-    ? packages.map(packageCard).join("")
-    : '<div class="empty-state">No packages match those filters. Try adjusting your search.</div>';
+  if (packages.length) {
+    target.innerHTML = packages.map(packageCard).join("");
+  } else {
+    target.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 48px 24px;">
+        <div style="font-size: 2.8rem; color: var(--tb-moss); margin-bottom: 14px;"><i class="bi bi-compass"></i></div>
+        <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 8px;">No Journeys Found</h3>
+        <p class="text-muted" style="max-width: 480px; margin: 0 auto 20px;">No packages match your selected criteria. Try adjusting your filters or clearing search terms.</p>
+        <button type="button" id="reset-catalog-filters" class="btn btn-primary btn-sm">Clear All Filters</button>
+      </div>`;
+
+    const resetBtn = target.querySelector("#reset-catalog-filters");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        const search = document.querySelector("#package-search");
+        const maxPrice = document.querySelector("#price-filter");
+        const maxDuration = document.querySelector("#duration-filter");
+        const sortOrder = document.querySelector("#sort-filter");
+        if (search) search.value = "";
+        if (maxPrice) maxPrice.value = "";
+        if (maxDuration) maxDuration.value = "";
+        if (sortOrder) sortOrder.value = "";
+
+        document.querySelectorAll(".category-pill").forEach((p) => {
+          const isAll = p.dataset.category === "all";
+          p.classList.toggle("active", isAll);
+          p.setAttribute("aria-selected", String(isAll));
+        });
+
+        if (window._triggerCatalogUpdate) {
+          window._triggerCatalogUpdate("all");
+        }
+      });
+    }
+  }
 }
 
 function setupPackageCatalog() {
@@ -19,12 +51,23 @@ function setupPackageCatalog() {
   const maxPrice = document.querySelector("#price-filter");
   const maxDuration = document.querySelector("#duration-filter");
   const sortOrder = document.querySelector("#sort-filter");
+  let activeCategory = "all";
 
-  function updatePackageList() {
+  function updatePackageList(categoryOverride) {
+    if (typeof categoryOverride === "string") {
+      activeCategory = categoryOverride;
+    }
+
     const query = search.value.trim().toLowerCase();
     let matchingPackages = travelPackages.filter((trip) =>
       `${trip.name} ${trip.destination}`.toLowerCase().includes(query),
     );
+
+    if (activeCategory && activeCategory !== "all") {
+      matchingPackages = matchingPackages.filter(
+        (trip) => (trip.category || "").toLowerCase() === activeCategory.toLowerCase(),
+      );
+    }
 
     if (maxPrice.value) {
       matchingPackages = matchingPackages.filter(
@@ -45,13 +88,33 @@ function setupPackageCatalog() {
     }
 
     renderPackageCards(matchingPackages, packageList);
-    document.querySelector("#result-count").textContent =
-      `${matchingPackages.length} thoughtfully planned trips`;
+    const countEl = document.querySelector("#result-count");
+    if (countEl) {
+      countEl.textContent = `${matchingPackages.length} thoughtfully planned ${matchingPackages.length === 1 ? "trip" : "trips"}`;
+    }
   }
 
+  window._triggerCatalogUpdate = updatePackageList;
+
+  // Setup category pill buttons
+  document.querySelectorAll(".category-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".category-pill").forEach((p) => {
+        p.classList.remove("active");
+        p.setAttribute("aria-selected", "false");
+      });
+      pill.classList.add("active");
+      pill.setAttribute("aria-selected", "true");
+      activeCategory = pill.dataset.category || "all";
+      updatePackageList();
+    });
+  });
+
   [search, maxPrice, maxDuration, sortOrder].forEach((input) => {
-    input.addEventListener("input", updatePackageList);
-    input.addEventListener("change", updatePackageList);
+    if (input) {
+      input.addEventListener("input", () => updatePackageList());
+      input.addEventListener("change", () => updatePackageList());
+    }
   });
 
   updatePackageList();

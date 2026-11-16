@@ -1718,3 +1718,40 @@ input:-webkit-autofill:active {
     max-width: none;
   }
 }
+
+/* --------------------------------------------------------------------------
+   CATEGORY PILLS FILTER BAR
+   -------------------------------------------------------------------------- */
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.category-pill {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 8px 18px;
+  border-radius: 30px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--tb-line, #E0D9C8);
+  color: var(--tb-deep-green, #2F4E3E);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.category-pill:hover {
+  background: var(--tb-paper, #F4EFE3);
+  border-color: var(--tb-gold, #C4A96A);
+  color: var(--tb-ink, #1A2B22);
+}
+
+.category-pill.active {
+  background: var(--tb-deep-green, #2F4E3E);
+  border-color: var(--tb-deep-green, #2F4E3E);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(47, 78, 62, 0.25);
+}
