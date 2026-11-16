@@ -516,7 +516,7 @@ function packageCard(item) {
         ${snippet ? `<p class="package-snippet">${escapeHTML(snippet)}</p>` : ""}
         <div class="package-footer">
           <div class="package-price">${formatINR(item.price)} <small>/ person</small></div>
-          <a class="btn btn-outline btn-sm" href="${detailsUrl}">View Details</a>
+          <a class="btn btn-outline btn-sm" href="${detailsUrl}">View Details <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </article>`;

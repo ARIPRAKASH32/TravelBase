@@ -518,8 +518,8 @@ function setupPackageManagement() {
             </td>
             <td>
               <div class="table-actions">
-                <button class="btn btn-outline btn-sm" data-edit="${index}">Edit</button>
-                <button class="btn btn-outline btn-sm" data-delete="${index}">Delete</button>
+                <button class="btn btn-outline btn-sm" data-edit="${index}"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-outline btn-sm" data-delete="${index}"><i class="bi bi-trash"></i> Delete</button>
               </div>
             </td>
           </tr>`,
@@ -641,8 +641,8 @@ function setupDestinationManagement() {
             <td>${escapeHTML(destination.description)}</td>
             <td>
               <div class="table-actions">
-                <button class="btn btn-outline btn-sm" data-edit="${index}">Edit</button>
-                <button class="btn btn-outline btn-sm" data-delete="${index}">Delete</button>
+                <button class="btn btn-outline btn-sm" data-edit="${index}"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-outline btn-sm" data-delete="${index}"><i class="bi bi-trash"></i> Delete</button>
               </div>
             </td>
           </tr>`,
