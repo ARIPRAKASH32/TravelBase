@@ -495,21 +495,28 @@ function renderSiteChrome() {
 
 function packageCard(item) {
   const detailsUrl = `${route("pages/package-details.html")}?id=${encodeURIComponent(item.id)}`;
+  const nights = item.nights || Math.max(1, item.days - 1);
+  const category = item.category || "Curated";
+  const snippet = item.description ? (item.description.length > 90 ? item.description.slice(0, 90) + "..." : item.description) : "";
 
   return `
-    <article class="package-card">
-      <a href="${detailsUrl}">
-        <img src="${item.image}" alt="${item.destination}" loading="lazy">
-      </a>
+    <article class="package-card" data-category="${escapeHTML(category.toLowerCase())}">
+      <div class="package-thumb-container">
+        <a href="${detailsUrl}" class="package-thumb-link" aria-label="View details for ${escapeHTML(item.name)}">
+          <img src="${item.image}" alt="${escapeHTML(item.destination)}" loading="lazy">
+        </a>
+        <span class="package-card-badge">${escapeHTML(category)}</span>
+      </div>
       <div class="package-body">
         <div class="package-meta">
-          <span><i class="bi bi-geo-alt"></i> ${item.destination}</span>
-          <span>${item.days} days</span>
+          <span><i class="bi bi-geo-alt"></i> ${escapeHTML(item.destination)}</span>
+          <span class="package-duration-pill"><i class="bi bi-clock-history"></i> ${item.days}D / ${nights}N</span>
         </div>
-        <h3>${item.name}</h3>
+        <h3><a href="${detailsUrl}">${escapeHTML(item.name)}</a></h3>
+        ${snippet ? `<p class="package-snippet">${escapeHTML(snippet)}</p>` : ""}
         <div class="package-footer">
           <div class="package-price">${formatINR(item.price)} <small>/ person</small></div>
-          <a class="btn btn-outline btn-sm" href="${detailsUrl}">View details</a>
+          <a class="btn btn-outline btn-sm" href="${detailsUrl}">View Details</a>
         </div>
       </div>
     </article>`;
