@@ -253,3 +253,20 @@ def get_admin_customers():
             "created_at": c.created_at.isoformat() if c.created_at else None,
         })
     return jsonify(results)
+
+
+@admin_api_bp.get("/payments")
+def get_admin_payments():
+    payments = Payment.query.order_by(Payment.id.desc()).all()
+    results = []
+    for p in payments:
+        results.append({
+            "id": p.id,
+            "booking_code": p.booking.booking_code if p.booking else "N/A",
+            "customer_name": p.booking.customer.name if (p.booking and p.booking.customer) else "Unknown",
+            "amount": float(p.amount) if p.amount else 0.0,
+            "method": p.payment_method or "Online Card",
+            "status": p.payment_status,
+            "date": p.payment_date.isoformat() if p.payment_date else None,
+        })
+    return jsonify(results)
