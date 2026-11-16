@@ -1,11 +1,13 @@
 from decimal import Decimal
+import re
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func
 
 from backend.app import db
-from backend.app.models import Destination, Package
+from backend.app.models import Destination, Enquiry, Package
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
 
 
 def _package_to_dict(pkg):
@@ -96,3 +98,29 @@ def get_package_detail(slug):
     if not pkg:
         return jsonify({"error": "Package not found"}), 404
     return jsonify(_package_to_dict(pkg))
+
+
+@api_bp.post("/enquiries")
+def submit_enquiry():
+    data = request.get_json(silent=True) or request.form.to_dict()
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    phone = (data.get("phone") or "").strip()
+    message = (data.get("message") or "").strip()
+
+    if not name or len(name) > 120:
+        return jsonify({"error": "Name is required (max 120 characters)"}), 400
+    if not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "A valid email address is required"}), 400
+    if not message or len(message) < 5:
+        return jsonify({"error": "Message is required (minimum 5 characters)"}), 400
+
+    enquiry = Enquiry(name=name, email=email, phone=phone, message=message, status="new")
+    db.session.add(enquiry)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Thank you. Your enquiry has been received and our concierge will contact you.",
+        "id": enquiry.id
+    }), 201
