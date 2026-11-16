@@ -342,7 +342,32 @@ function setupSavedBookings() {
   const message = document.querySelector("#my-bookings-message");
   const tableBody = table.tBodies[0];
 
-  function renderBookings() {
+  async function renderBookings() {
+    // Attempt live fetch from MySQL backend
+    try {
+      const res = await fetch("/api/bookings", { credentials: "same-origin" });
+      if (res.ok) {
+        const liveBookings = await res.json();
+        if (Array.isArray(liveBookings) && liveBookings.length > 0) {
+          tableBody.innerHTML = "";
+          liveBookings.forEach((b) => {
+            const row = tableBody.insertRow();
+            const badgeClass = b.status === "confirmed" ? "badge-success" : (b.status === "cancelled" ? "badge-danger" : "badge-warning");
+            row.innerHTML = `
+              <td><strong>${escapeHTML(b.booking_code)}</strong></td>
+              <td>${escapeHTML(b.package_name)}</td>
+              <td>${b.travel_date || "Flexible"}</td>
+              <td>${b.people}</td>
+              <td>${formatINR(b.total_amount)}</td>
+              <td><span class="badge ${badgeClass}">${escapeHTML(b.status)}</span></td>
+              <td><span class="text-muted" style="font-size:0.85rem">Confirmed in DB</span></td>
+            `;
+          });
+          return;
+        }
+      }
+    } catch (_) {}
+
     tableBody.querySelectorAll("[data-demo-booking]").forEach((row) => row.remove());
 
     let bookings;
