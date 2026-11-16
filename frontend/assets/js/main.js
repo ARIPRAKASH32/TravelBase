@@ -555,9 +555,42 @@ function setupContactForm() {
   });
 }
 
+function setupBackToTop() {
+  const existingBtn = document.querySelector("#back-to-top");
+  if (existingBtn) return;
+
+  const btn = document.createElement("button");
+  btn.id = "back-to-top";
+  btn.className = "back-to-top";
+  btn.setAttribute("aria-label", "Scroll to top of page");
+  btn.setAttribute("type", "button");
+  btn.innerHTML = `<i class="bi bi-arrow-up" aria-hidden="true"></i>`;
+
+  document.body.appendChild(btn);
+
+  const toggleVisibility = () => {
+    if (window.scrollY > 300) {
+      btn.classList.add("visible");
+    } else {
+      btn.classList.remove("visible");
+    }
+  };
+
+  window.addEventListener("scroll", toggleVisibility, { passive: true });
+  toggleVisibility();
+
+  btn.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   renderSiteChrome();
   setupContactForm();
+  setupBackToTop();
 
   document.querySelectorAll("[data-year]").forEach((element) => {
     element.textContent = new Date().getFullYear();
