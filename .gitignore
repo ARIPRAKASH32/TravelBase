@@ -1,11 +1,47 @@
+# Python Virtual Environments
 .venv/
 venv/
-node_modules/
+ENV/
+env/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Environment & API Secret Keys (NEVER commit secrets or API keys)
 .env
 .env.*
 !.env.example
-__pycache__/
-*.pyc
+*.env
+local.env
+secrets/
+credentials.json
+token.json
+serviceAccountKey*.json
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+
+# Database & SQLite files
+*.sqlite
+*.sqlite3
+*.db
+instance/
+
+# Node & Frontend dependencies
+node_modules/
 dist/
 build/
+.npm/
+
+# IDE & OS files
 .DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db

@@ -1,33 +1,214 @@
-@media(max-width:440px) {
-  .stat-grid {
-    grid-template-columns:1fr 1fr
+/* ==========================================================================
+   TravelBase Responsive Stylesheet — responsive.css
+   Supplements tb-design-system.css and style.css across all breakpoints
+   ========================================================================== */
+
+/* --- TABLETS & SMALL LAPTOPS (<= 992px) --- */
+@media (max-width: 992px) {
+  .nav-wrap {
+    height: 72px;
   }
-  .stat-card span {
-    font-size:.78rem
-  }
-  .stat-card strong {
-    font-size:1.2rem
-  }
-  .app-user span {
-    display:none
-  }
-  .app-header .brand {
-    font-size:1.1rem
-  }
-  .table-wrap {
-    margin:0 -8px
-  }
-  .panel {
-    padding:15px
-  }
+
   .hero h1 {
-    font-size:2.65rem
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
   }
+
+  .package-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .filter-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .category-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .category-pill {
+    flex-shrink: 0;
+  }
+}
+
+/* --- LARGE PHONES & SMALL TABLETS (<= 768px) --- */
+@media (max-width: 768px) {
+  .site-header {
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-wrap {
+    height: 64px;
+  }
+
+  .brand svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand span {
+    font-size: 1.3rem !important;
+  }
+
+  .nav-actions .btn-outline {
+    display: none;
+  }
+
+  .hero {
+    padding: 60px 0 40px;
+  }
+
+  .hero-search-wrap,
+  .hero-search-bar {
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .hero-search-bar input,
+  .hero-search-bar select,
+  .hero-search-bar button {
+    width: 100%;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .package-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .package-thumb-container,
+  .package-card a img {
+    height: 220px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1050;
+    transition: transform 0.3s ease;
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .app-main {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  .back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+  }
+}
+
+/* --- SMALL MOBILE PHONES (<= 480px) --- */
+@media (max-width: 480px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-card span {
+    font-size: 0.78rem;
+  }
+
+  .stat-card strong {
+    font-size: 1.25rem;
+  }
+
+  .app-user span {
+    display: none;
+  }
+
+  .app-header .brand {
+    font-size: 1.05rem;
+  }
+
+  .hero h1 {
+    font-size: 2.2rem;
+    line-height: 1.18;
+  }
+
+  .hero p {
+    font-size: 0.95rem;
+  }
+
   .nav-actions .btn-primary {
-    font-size: .8rem;
-    padding:8px
+    font-size: 0.78rem;
+    padding: 6px 12px;
   }
-  .package-card img {
-    height:205px
+
+  .panel {
+    padding: 16px;
+  }
+
+  .package-body {
+    padding: 20px;
+  }
+
+  .package-body h3 {
+    font-size: 1.35rem;
+  }
+
+  .package-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .package-footer .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-image {
+    display: none;
+  }
+
+  .auth-form-wrap {
+    padding: 24px 16px;
   }
 }
