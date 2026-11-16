@@ -1,10 +1,12 @@
+from datetime import date, datetime
 from decimal import Decimal
 import re
+import secrets
 from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
 
 from backend.app import db
-from backend.app.models import Destination, Enquiry, Package, User
+from backend.app.models import Booking, BookingPassenger, Destination, Enquiry, Package, User
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
@@ -188,3 +190,113 @@ def update_profile():
             "address": user.address or "",
         }
     })
+
+
+@api_bp.get("/bookings")
+def get_customer_bookings():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    bookings = Booking.query.filter_by(customer_id=user_id).order_by(Booking.created_at.desc()).all()
+    results = []
+    for b in bookings:
+        results.append({
+            "id": b.id,
+            "booking_code": b.booking_code,
+            "package_name": b.package.package_name if b.package else "Custom Trip",
+            "destination": b.package.destination.name if (b.package and b.package.destination) else "",
+            "travel_date": b.travel_date.isoformat() if b.travel_date else None,
+            "people": b.number_of_people,
+            "total_amount": float(b.total_amount) if b.total_amount else 0.0,
+            "status": b.booking_status,
+            "created_at": b.created_at.isoformat() if b.created_at else None,
+            "passengers": [{"name": p.name, "email": p.email} for p in b.passengers],
+        })
+    return jsonify(results)
+
+
+@api_bp.post("/bookings")
+def create_booking():
+    user_id = session.get("user_id")
+    data = request.get_json(silent=True) or request.form.to_dict()
+
+    # Determine user
+    if user_id:
+        user = User.query.get(user_id)
+    else:
+        email = (data.get("email") or "").strip().lower()
+        if not email or not EMAIL_PATTERN.fullmatch(email):
+            return jsonify({"error": "A valid email is required to book"}), 400
+        user = User.query.filter(func.lower(User.email) == email).first()
+        if not user:
+            name = (data.get("name") or "Guest Traveler").strip()
+            user = User(name=name, email=email, role="customer")
+            user.set_password(secrets.token_urlsafe(16))
+            db.session.add(user)
+            db.session.flush()
+
+    # Determine package
+    package_slug = data.get("package_id") or data.get("package_slug")
+    pkg = Package.query.filter_by(slug=package_slug).first()
+    if not pkg:
+        # Fallback by id
+        try:
+            pkg = Package.query.get(int(package_slug))
+        except (ValueError, TypeError):
+            pass
+    if not pkg:
+        return jsonify({"error": "Selected travel package not found"}), 404
+
+    travel_date_str = data.get("travel_date") or data.get("date")
+    if not travel_date_str:
+        return jsonify({"error": "Travel date is required"}), 400
+    try:
+        travel_date_val = datetime.strptime(travel_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    if travel_date_val < date.today():
+        return jsonify({"error": "Travel date cannot be in the past"}), 400
+
+    people = int(data.get("number_of_people") or data.get("people") or 1)
+    if people < 1 or people > 20:
+        return jsonify({"error": "Number of travellers must be between 1 and 20"}), 400
+
+    total_amount = Decimal(pkg.price) * Decimal(people)
+    booking_code = f"TB-{secrets.token_hex(4).upper()}"
+
+    booking = Booking(
+        booking_code=booking_code,
+        customer_id=user.id,
+        package_id=pkg.id,
+        travel_date=travel_date_val,
+        number_of_people=people,
+        total_amount=total_amount,
+        booking_status="pending",
+    )
+    db.session.add(booking)
+    db.session.flush()
+
+    # Optional passengers
+    passengers_data = data.get("passengers") or []
+    if isinstance(passengers_data, list):
+        for p in passengers_data:
+            if isinstance(p, dict) and p.get("name"):
+                bp = BookingPassenger(
+                    booking_id=booking.id,
+                    name=p.get("name", "").strip(),
+                    email=p.get("email", "").strip(),
+                )
+                db.session.add(bp)
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": f"Booking request {booking_code} created successfully!",
+        "booking_code": booking_code,
+        "id": booking.id,
+        "total_amount": float(total_amount),
+        "status": "pending",
+    }), 201
