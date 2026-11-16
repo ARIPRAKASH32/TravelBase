@@ -21,6 +21,23 @@ function setupProfileForm() {
     });
   }
 
+  // Attempt live profile sync from MySQL database
+  async function loadBackendProfile() {
+    try {
+      const res = await fetch("/api/profile", { credentials: "same-origin" });
+      if (res.ok) {
+        const data = await res.json();
+        ["name", "email", "phone", "address"].forEach((key) => {
+          const f = form.elements.namedItem(key);
+          if (f && data[key]) {
+            f.value = data[key];
+          }
+        });
+      }
+    } catch (_) {}
+  }
+  loadBackendProfile();
+
   document.querySelector("#edit-profile").addEventListener("click", () => {
     fields.forEach((field) => {
       field.readOnly = false;
@@ -30,7 +47,7 @@ function setupProfileForm() {
     document.querySelector("#edit-profile").disabled = true;
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     if (!form.reportValidity()) {
@@ -52,6 +69,38 @@ function setupProfileForm() {
 
     document.querySelector("#save-profile").disabled = true;
     document.querySelector("#edit-profile").disabled = false;
+
+    // Persist to MySQL backend if active
+    try {
+      let csrfToken = "";
+      try {
+        const tokenRes = await fetch("/csrf-token", { credentials: "same-origin" });
+        if (tokenRes.ok) {
+          const t = await tokenRes.json();
+          csrfToken = t.token;
+        }
+      } catch (_) {}
+
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+        },
+        body: JSON.stringify(profile),
+      });
+
+      if (res.ok) {
+        showMessage(
+          document.querySelector("#profile-message"),
+          "Profile successfully updated in database.",
+          "success",
+        );
+        if (window.showToast) window.showToast("Profile updated!", "success");
+        return;
+      }
+    } catch (_) {}
+
     showMessage(
       document.querySelector("#profile-message"),
       "Profile changes saved in this browser demo.",
