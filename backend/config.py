@@ -4,7 +4,16 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).with_name(".env"))
+# Search for .env in backend directory or root directory
+_backend_env = Path(__file__).resolve().parent / ".env"
+_root_env = Path(__file__).resolve().parent.parent / ".env"
+
+if _backend_env.exists():
+    load_dotenv(_backend_env)
+elif _root_env.exists():
+    load_dotenv(_root_env)
+else:
+    load_dotenv()
 
 
 class Config:
