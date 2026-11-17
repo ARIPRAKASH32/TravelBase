@@ -1186,11 +1186,39 @@ async function loadCustomerName() {
   const role = document.body.dataset.role || "admin";
   if (role !== "customer") return;
 
+  // Check localStorage first for demo/saved profile
+  let displayName = null;
+  let address = null;
+  try {
+    const saved = JSON.parse(localStorage.getItem("travelbase-profile") || "null");
+    if (saved && saved.name) {
+      displayName = saved.name;
+      address = saved.address;
+    }
+  } catch (_) {}
+
+  // Update header and dashboard greeting immediately from saved profile if available
+  if (displayName) {
+    const headerName = document.querySelector("#header-user-name");
+    if (headerName) headerName.textContent = displayName;
+    const customerName = document.querySelector("#customer-name");
+    if (customerName) customerName.textContent = displayName;
+    const profileDisplayName = document.querySelector("#profile-display-name");
+    if (profileDisplayName) profileDisplayName.textContent = displayName;
+    const profileAvatarInitials = document.querySelector("#profile-avatar-initials");
+    if (profileAvatarInitials) {
+      const parts = displayName.trim().split(/\s+/);
+      profileAvatarInitials.textContent = parts.length > 1
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : parts[0].slice(0, 2).toUpperCase();
+    }
+  }
+
   try {
     const res = await fetch("/api/profile", { credentials: "same-origin" });
     if (!res.ok) return;
     const data = await res.json();
-    const displayName = data.name || "Traveler";
+    displayName = data.name || displayName || "Traveler";
 
     // Update header user name
     const headerName = document.querySelector("#header-user-name");
@@ -1199,6 +1227,17 @@ async function loadCustomerName() {
     // Update dashboard greeting
     const customerName = document.querySelector("#customer-name");
     if (customerName) customerName.textContent = displayName;
+
+    // Update profile page header if present
+    const profileDisplayName = document.querySelector("#profile-display-name");
+    if (profileDisplayName) profileDisplayName.textContent = displayName;
+    const profileAvatarInitials = document.querySelector("#profile-avatar-initials");
+    if (profileAvatarInitials) {
+      const parts = displayName.trim().split(/\s+/);
+      profileAvatarInitials.textContent = parts.length > 1
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : parts[0].slice(0, 2).toUpperCase();
+    }
   } catch (err) {
     console.warn("Could not load customer profile name:", err);
   }

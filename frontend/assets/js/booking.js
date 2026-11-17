@@ -11,6 +11,26 @@ function setupProfileForm() {
   );
   const savedProfile = JSON.parse(localStorage.getItem(storageKey) || "null");
 
+  function updateProfileAvatar(profileName, profileLocation) {
+    const displayNameEl = document.querySelector("#profile-display-name");
+    const displayMetaEl = document.querySelector("#profile-display-meta");
+    const avatarInitialsEl = document.querySelector("#profile-avatar-initials");
+
+    if (profileName && displayNameEl) {
+      displayNameEl.textContent = profileName;
+    }
+    if (avatarInitialsEl && profileName) {
+      const parts = profileName.trim().split(/\s+/);
+      const initials = parts.length > 1
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : parts[0].slice(0, 2).toUpperCase();
+      avatarInitialsEl.textContent = initials;
+    }
+    if (displayMetaEl && (profileLocation || profileName)) {
+      displayMetaEl.textContent = `Member · ${profileLocation || "TravelBase Explorer"}`;
+    }
+  }
+
   if (savedProfile) {
     Object.entries(savedProfile).forEach(([name, value]) => {
       const field = form.elements.namedItem(name);
@@ -19,6 +39,7 @@ function setupProfileForm() {
         field.value = value;
       }
     });
+    updateProfileAvatar(savedProfile.name, savedProfile.address);
   }
 
   // Attempt live profile sync from MySQL database
@@ -33,6 +54,7 @@ function setupProfileForm() {
             f.value = data[key];
           }
         });
+        updateProfileAvatar(data.name, data.address);
       }
     } catch (_) {}
   }
@@ -62,6 +84,13 @@ function setupProfileForm() {
     );
 
     localStorage.setItem(storageKey, JSON.stringify(profile));
+    updateProfileAvatar(profile.name, profile.address);
+
+    // Also update any sidebar/header customer names
+    const headerName = document.querySelector("#header-user-name");
+    if (headerName && profile.name) headerName.textContent = profile.name;
+    const customerName = document.querySelector("#customer-name");
+    if (customerName && profile.name) customerName.textContent = profile.name;
 
     fields.forEach((field) => {
       field.readOnly = true;
