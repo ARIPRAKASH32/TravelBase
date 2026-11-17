@@ -890,6 +890,20 @@ const travelPackages = [
 
 const root = document.body.dataset.root || ".";
 
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => {
+    const replacements = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+
+    return replacements[character];
+  });
+}
+
 function route(path) {
   return `${root}/${path}`;
 }

@@ -1,4 +1,4 @@
-﻿function renderDashboardShell() {
+function renderDashboardShell() {
   const shell = document.querySelector("#dashboard-shell");
 
   if (!shell) {

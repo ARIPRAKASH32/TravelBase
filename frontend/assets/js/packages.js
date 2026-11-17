@@ -1,4 +1,4 @@
-﻿function renderPackageCards(packages, target) {
+function renderPackageCards(packages, target) {
   if (!target) {
     return;
   }
