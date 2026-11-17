@@ -1160,12 +1160,13 @@ async function setupPaymentActions() {
           .map(
             (p) => `
               <tr data-payment-id="${p.id}">
+                <td><span class="booking-code-chip">PAY-${String(p.id).padStart(4, "0")}</span></td>
                 <td><strong>${escapeHTML(p.booking_code)}</strong></td>
                 <td>${escapeHTML(p.customer_name)}</td>
-                <td>${formatINR(p.amount)}</td>
+                <td><strong>${formatINR(p.amount)}</strong></td>
+                <td>${p.date ? new Date(p.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</td>
                 <td>${escapeHTML(p.method)}</td>
-                <td><span class="badge ${p.status === "completed" ? "badge-success" : "badge-warning"}">${escapeHTML(p.status)}</span></td>
-                <td>${p.date ? new Date(p.date).toLocaleDateString("en-IN") : "—"}</td>
+                <td><span class="badge ${p.status === "completed" ? "badge-success" : (p.status === "refunded" ? "badge-danger" : "badge-warning")}">${escapeHTML(p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1) : "Completed")}</span></td>
               </tr>`,
           )
           .join("");

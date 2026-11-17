@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../assets/css/dashboard.css?v=3.3">
     <link rel="stylesheet" href="../../assets/css/responsive.css?v=3.1">
     <script defer src="../../assets/js/main.js?v=3.3"></script>
-    <script defer src="../../assets/js/admin.js?v=3.5"></script>
+    <script defer src="../../assets/js/admin.js?v=3.6"></script>
   </head>
   <body data-root="../.." data-role="admin" data-section="customers">
     <div id="dashboard-shell">
@@ -20,13 +20,13 @@
       <div class="app-titlebar">
         <div>
           <h1>Customers</h1>
-          <p>Customer records in the sample dataset.</p>
+          <p>Manage verified customer profiles, booking histories, and travel accounts.</p>
         </div>
       </div>
       <section class="panel">
         <div class="toolbar">
           <input id="table-search" class="control admin-search" type="search" placeholder="Search name, email or phone" aria-label="Search customers">
-          <span class="notice">1,284 sample accounts</span>
+          <span class="notice">Registered traveler profiles</span>
         </div>
         <div class="table-wrap">
           <table id="data-table">
@@ -41,38 +41,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Alex Morgan</td>
-                <td>alex.morgan@example.com</td>
-                <td>+1 503 555 0142</td>
-                <td>14 Feb 2024</td>
-                <td><span class="badge badge-success">Active</span></td>
-                <td><button class="btn btn-outline btn-sm" data-view-customer>View details</button></td>
-              </tr>
-              <tr>
-                <td>Samira Patel</td>
-                <td>samira.patel@example.com</td>
-                <td>+1 415 555 0180</td>
-                <td>02 Sep 2024</td>
-                <td><span class="badge badge-success">Active</span></td>
-                <td><button class="btn btn-outline btn-sm" data-view-customer>View details</button></td>
-              </tr>
-              <tr>
-                <td>Jordan Lee</td>
-                <td>jordan.lee@example.com</td>
-                <td>+1 206 555 0162</td>
-                <td>19 Jan 2025</td>
-                <td><span class="badge badge-warning">Review</span></td>
-                <td><button class="btn btn-outline btn-sm" data-view-customer>View details</button></td>
-              </tr>
-              <tr>
-                <td>Casey Rivera</td>
-                <td>casey.rivera@example.com</td>
-                <td>+1 503 555 0119</td>
-                <td>11 Jun 2025</td>
-                <td><span class="badge badge-success">Active</span></td>
-                <td><button class="btn btn-outline btn-sm" data-view-customer>View details</button></td>
-              </tr>
+              <!-- Populated dynamically from registered customer accounts -->
             </tbody>
           </table>
         </div>

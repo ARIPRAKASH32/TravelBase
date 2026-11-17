@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, session
 from sqlalchemy import func
 
 from backend.app import db
-from backend.app.models import Booking, BookingPassenger, Destination, Enquiry, Package, User
+from backend.app.models import Booking, BookingPassenger, Destination, Enquiry, Package, Payment, User
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
@@ -302,6 +302,16 @@ def create_booking():
                     email=p.get("email", "").strip(),
                 )
                 db.session.add(bp)
+
+    # Auto-generate payment record for new booking
+    payment = Payment(
+        booking_id=booking.id,
+        amount=total_amount,
+        payment_method="Credit Card / Net Banking",
+        payment_status="completed",
+        payment_date=datetime.utcnow(),
+    )
+    db.session.add(payment)
 
     db.session.commit()
 

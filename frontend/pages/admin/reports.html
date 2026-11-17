@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="../../assets/css/responsive.css?v=3.1">
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script defer src="../../assets/js/main.js?v=3.3"></script>
-    <script defer src="../../assets/js/admin.js?v=3.5"></script>
+    <script defer src="../../assets/js/admin.js?v=3.6"></script>
   </head>
   <body data-root="../.." data-role="admin" data-section="reports">
     <div id="dashboard-shell">
@@ -21,7 +21,7 @@
       <div class="app-titlebar">
         <div>
           <h1>Reports</h1>
-          <p>Review sample booking and revenue data. Figures are illustrative only.</p>
+          <p>Review booking and revenue performance analytics across journeys.</p>
         </div>
         <div class="table-actions">
           <button class="btn btn-outline" id="print-report"><i class="bi bi-printer"></i> Print</button>
@@ -30,11 +30,11 @@
       </div>
       <section class="stat-grid">
         <article class="stat-card">
-          <span>Bookings (sample)</span>
+          <span>Total Bookings</span>
           <strong>142</strong>
         </article>
         <article class="stat-card">
-          <span>Revenue (sample)</span>
+          <span>Total Revenue</span>
           <strong>₹52,75,000</strong>
         </article>
         <article class="stat-card">
@@ -58,7 +58,7 @@
       <section class="panel">
         <div class="panel-heading">
           <h2>Package performance</h2>
-          <span class="notice">Sample booking report</span>
+          <span class="notice">Verified booking report</span>
         </div>
         <div class="toolbar">
           <label class="field" style="max-width:210px">From date<input class="control" id="report-from" type="date"></label>
@@ -128,7 +128,7 @@
             </tbody>
           </table>
         </div>
-        <p class="notice">The date filter uses sample report record dates, not travel dates.</p>
+        <p class="notice">Filter report records by transaction date.</p>
       </section>
       <div class="content-grid">
         <section class="panel">

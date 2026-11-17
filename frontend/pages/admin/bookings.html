@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../assets/css/dashboard.css?v=3.3">
     <link rel="stylesheet" href="../../assets/css/responsive.css?v=3.1">
     <script defer src="../../assets/js/main.js?v=3.3"></script>
-    <script defer src="../../assets/js/admin.js?v=3.5"></script>
+    <script defer src="../../assets/js/admin.js?v=3.6"></script>
   </head>
   <body data-root="../.." data-role="admin" data-section="bookings">
     <div id="dashboard-shell">
@@ -20,7 +20,7 @@
       <div class="app-titlebar">
         <div>
           <h1>Bookings</h1>
-          <p>Review and update booking requests. Status changes are demo-only.</p>
+          <p>Review and manage verified customer reservations and status updates.</p>
         </div>
       </div>
       <section class="panel">
@@ -41,61 +41,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>TE-24081</td>
-                <td>Alex Morgan</td>
-                <td>Bali Island Escape</td>
-                <td>12 May 2027</td>
-                <td>₹2,58,000</td>
-                <td><span class="badge badge-success">Confirmed</span></td>
-                <td>
-                  <div class="table-actions">
-                    <button class="btn btn-outline btn-sm" data-booking-action="cancel">Cancel</button>
-                    <button class="btn btn-outline btn-sm" data-booking-action="view">View</button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>TE-24080</td>
-                <td>Samira Patel</td>
-                <td>Swiss Alpine Discovery</td>
-                <td>21 Jun 2027</td>
-                <td>₹4,96,000</td>
-                <td><span class="badge badge-warning">Pending</span></td>
-                <td>
-                  <div class="table-actions">
-                    <button class="btn btn-outline btn-sm" data-booking-action="confirm">Confirm</button>
-                    <button class="btn btn-outline btn-sm" data-booking-action="cancel">Cancel</button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>TE-24079</td>
-                <td>Jordan Lee</td>
-                <td>Kyoto Culture Trail</td>
-                <td>08 Apr 2027</td>
-                <td>₹3,48,000</td>
-                <td><span class="badge badge-success">Confirmed</span></td>
-                <td>
-                  <div class="table-actions">
-                    <button class="btn btn-outline btn-sm" data-booking-action="cancel">Cancel</button>
-                    <button class="btn btn-outline btn-sm" data-booking-action="view">View</button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>TE-24078</td>
-                <td>Casey Rivera</td>
-                <td>Amalfi Coast Slow Escape</td>
-                <td>16 Sep 2027</td>
-                <td>₹2,19,000</td>
-                <td><span class="badge badge-danger">Cancelled</span></td>
-                <td>
-                  <div class="table-actions">
-                    <button class="btn btn-outline btn-sm" data-booking-action="view">View</button>
-                  </div>
-                </td>
-              </tr>
+              <!-- Populated dynamically from verified customer bookings -->
             </tbody>
           </table>
         </div>
