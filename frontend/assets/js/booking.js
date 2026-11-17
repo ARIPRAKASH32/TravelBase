@@ -133,14 +133,13 @@ function isValidDemoBooking(booking) {
     typeof booking.id === "string" &&
     typeof booking.packageId === "string" &&
     typeof booking.packageName === "string" &&
-    typeof booking.destination === "string" &&
+    (typeof booking.destination === "string" || Array.isArray(booking.custom_destinations)) &&
     isValidTravelDate(booking.travelDate) &&
     Number.isInteger(booking.passengers) &&
     booking.passengers >= 1 &&
     booking.passengers <= 8 &&
     Number.isFinite(booking.total) &&
-    booking.total >= 0 &&
-    booking.status === "Requested"
+    booking.total >= 0
   );
 }
 
@@ -173,37 +172,295 @@ function showBookingStorageError(messageElement, error) {
   );
 }
 
-function setupBookingForm() {
+async function setupBookingForm() {
   const form = document.querySelector("#booking-form");
 
   if (!form) {
     return;
   }
 
-  const packageId = new URLSearchParams(location.search).get("id");
-  const trip = travelPackages.find((item) => item.id === packageId) || travelPackages[0];
+  // 1. Available packages
+  let packages = (window._activePackageSource && window._activePackageSource.length > 0)
+    ? window._activePackageSource
+    : (typeof travelPackages !== "undefined" ? travelPackages : []);
+
+  try {
+    const pkgRes = await fetch("/api/packages");
+    if (pkgRes.ok) {
+      const livePkgs = await pkgRes.json();
+      if (Array.isArray(livePkgs) && livePkgs.length > 0) {
+        packages = livePkgs;
+        window._activePackageSource = livePkgs;
+      }
+    }
+  } catch (_) {}
+
+  // 2. Available destinations
+  let allDestinations = [];
+  try {
+    const destRes = await fetch("/api/destinations");
+    if (destRes.ok) {
+      const liveDests = await destRes.json();
+      if (Array.isArray(liveDests) && liveDests.length > 0) {
+        allDestinations = liveDests;
+      }
+    }
+  } catch (_) {}
+
+  if (!allDestinations || allDestinations.length === 0) {
+    const uniqueDestNames = Array.from(new Set(packages.map((p) => p.destination)));
+    allDestinations = uniqueDestNames.map((name, i) => ({
+      id: i + 1,
+      name: name,
+      location: name.includes(",") ? name.split(",").slice(-1)[0].trim() : name,
+    }));
+  }
+
+  // 3. Determine initially selected package
+  const urlPkgId = new URLSearchParams(location.search).get("id");
+  let currentTrip = (urlPkgId && packages.find((p) => p.id === urlPkgId)) || packages[0];
+
+  // 4. Multi-destination state (up to 5 destinations)
+  const MAX_DESTINATIONS = 5;
+  let selectedDestinations = [currentTrip.destination];
+
+  // DOM elements
+  const packageSelect = document.querySelector("#package-select");
+  const destinationSlots = document.querySelector("#destination-slots");
+  const destinationCountBadge = document.querySelector("#destination-count-badge");
+  const nextStopNum = document.querySelector("#next-stop-num");
+  const addDestBtn = document.querySelector("#add-destination-btn");
+  const fill5DestBtn = document.querySelector("#fill-5-destinations-btn");
+  const resetDestBtn = document.querySelector("#reset-destinations-btn");
+  const quickPickPills = document.querySelector("#quick-pick-pills");
   const passengerCount = document.querySelector("#passenger-count");
   const travelDate = document.querySelector("#travel-date");
   const searchDate = localStorage.getItem("travelbase-search-date");
   const passengerSummary = document.querySelector("#summary-passengers");
   const totalSummary = document.querySelector("#summary-total");
+  const packageSummary = document.querySelector("#booking-package");
+  const summaryRouteList = document.querySelector("#summary-route-list");
+  const asideDestCount = document.querySelector("#aside-dest-count");
+  const summaryBaseRate = document.querySelector("#summary-base-rate");
+  const summaryTravelDate = document.querySelector("#summary-travel-date");
+  const btnDestCount = document.querySelector("#btn-dest-count");
 
   travelDate.min = getLocalDateString(new Date());
 
   if (searchDate && searchDate >= travelDate.min) {
     travelDate.value = searchDate;
+    if (summaryTravelDate) summaryTravelDate.textContent = searchDate;
   }
 
-  document.querySelector("#booking-package").innerHTML = `
-    <img class="thumb" style="width: 100%; height: 180px" src="${trip.image}" alt="${trip.destination}">
-    <h2 style="margin: 15px 0 5px; color: var(--navy)">${trip.name}</h2>
-    <p class="text-muted">${trip.destination} · ${trip.days} days / ${trip.nights} nights</p>
-    <p><strong>${formatINR(trip.price)}</strong> per person</p>`;
+  travelDate.addEventListener("change", () => {
+    if (summaryTravelDate) summaryTravelDate.textContent = travelDate.value || "—";
+  });
+
+  // Populate #package-select
+  if (packageSelect) {
+    packageSelect.innerHTML = packages.map((pkg) => `
+      <option value="${escapeHTML(pkg.id)}" ${pkg.id === currentTrip.id ? "selected" : ""}>
+        ${escapeHTML(pkg.name)} — ${escapeHTML(pkg.destination)} (${pkg.days}D/${pkg.nights}N, ${formatINR(pkg.price)}/pax)
+      </option>
+    `).join("");
+
+    packageSelect.addEventListener("change", () => {
+      const found = packages.find((p) => p.id === packageSelect.value);
+      if (found) {
+        currentTrip = found;
+        if (selectedDestinations.length === 1) {
+          selectedDestinations = [currentTrip.destination];
+        } else if (!selectedDestinations.includes(currentTrip.destination)) {
+          selectedDestinations[0] = currentTrip.destination;
+        }
+        renderPackagePreview();
+        renderDestinationSlots();
+        updateTotal();
+      }
+    });
+  }
+
+  function renderPackagePreview() {
+    if (!packageSummary) return;
+    const nights = currentTrip.nights || Math.max(1, currentTrip.days - 1);
+    packageSummary.innerHTML = `
+      <img class="thumb" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px;" src="${currentTrip.image}" alt="${escapeHTML(currentTrip.destination)}">
+      <h2 style="margin: 14px 0 4px; font-size: 1.2rem; color: var(--tb-ink); font-family: var(--font-serif);">${escapeHTML(currentTrip.name)}</h2>
+      <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 6px;"><i class="bi bi-geo-alt"></i> ${escapeHTML(currentTrip.destination)} · ${currentTrip.days} days / ${nights} nights</p>
+      <p style="margin: 0;"><strong>${formatINR(currentTrip.price)}</strong> <small class="text-muted">/ person</small></p>`;
+    if (summaryBaseRate) {
+      summaryBaseRate.textContent = `${formatINR(currentTrip.price)} / pax`;
+    }
+  }
+
+  function renderDestinationSlots() {
+    if (!destinationSlots) return;
+
+    destinationSlots.innerHTML = selectedDestinations.map((dest, idx) => {
+      const isPrimary = idx === 0;
+      return `
+        <div class="destination-slot-card" data-slot-index="${idx}">
+          <div class="stop-badge" title="Stop #${idx + 1}">${idx + 1}</div>
+          <div class="dest-select-wrapper">
+            <select class="dest-select form-select" data-slot-index="${idx}" aria-label="Destination stop ${idx + 1}">
+              ${allDestinations.map((d) => `
+                <option value="${escapeHTML(d.name)}" ${d.name === dest ? "selected" : ""}>
+                  ${escapeHTML(d.name)} (${escapeHTML(d.location)})
+                </option>
+              `).join("")}
+              ${!allDestinations.some((d) => d.name === dest) ? `<option value="${escapeHTML(dest)}" selected>${escapeHTML(dest)}</option>` : ""}
+            </select>
+          </div>
+          ${!isPrimary ? `
+            <button type="button" class="remove-dest-btn" data-remove-index="${idx}" title="Remove this destination stop">
+              <i class="bi bi-trash"></i> Remove
+            </button>
+          ` : `<span class="badge bg-light text-muted border" style="font-size:0.75rem">Base Stop</span>`}
+        </div>`;
+    }).join("");
+
+    destinationSlots.querySelectorAll(".dest-select").forEach((sel) => {
+      sel.addEventListener("change", (e) => {
+        const idx = parseInt(e.target.dataset.slotIndex, 10);
+        selectedDestinations[idx] = e.target.value;
+        renderSummaryRoute();
+        renderQuickPills();
+      });
+    });
+
+    destinationSlots.querySelectorAll(".remove-dest-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.removeIndex, 10);
+        selectedDestinations.splice(idx, 1);
+        renderDestinationSlots();
+        updateTotal();
+      });
+    });
+
+    const count = selectedDestinations.length;
+    if (destinationCountBadge) {
+      destinationCountBadge.textContent = `${count} / ${MAX_DESTINATIONS} Selected`;
+      destinationCountBadge.className = count === MAX_DESTINATIONS ? "dest-badge-counter bg-warning text-dark" : "dest-badge-counter";
+    }
+    if (nextStopNum) {
+      nextStopNum.textContent = String(Math.min(MAX_DESTINATIONS, count + 1));
+    }
+    if (addDestBtn) {
+      addDestBtn.disabled = count >= MAX_DESTINATIONS;
+      if (count >= MAX_DESTINATIONS) {
+        addDestBtn.classList.add("disabled");
+        addDestBtn.innerHTML = `<i class="bi bi-check2-circle me-1"></i> Max 5 Destinations Reached`;
+      } else {
+        addDestBtn.classList.remove("disabled");
+        addDestBtn.innerHTML = `<i class="bi bi-plus-circle me-1"></i> Add Destination (Stop ${count + 1} of 5)`;
+      }
+    }
+    if (btnDestCount) {
+      btnDestCount.textContent = String(count);
+    }
+    if (asideDestCount) {
+      asideDestCount.textContent = `${count} Stop${count > 1 ? "s" : ""}`;
+    }
+
+    renderSummaryRoute();
+    renderQuickPills();
+  }
+
+  function renderSummaryRoute() {
+    if (!summaryRouteList) return;
+    summaryRouteList.innerHTML = selectedDestinations.map((dest, idx) => `
+      <li class="summary-route-item">
+        <span class="route-num">${idx + 1}</span>
+        <span class="text-truncate"><strong>${escapeHTML(dest)}</strong></span>
+      </li>
+    `).join("");
+  }
+
+  function renderQuickPills() {
+    if (!quickPickPills) return;
+    const popularPicks = allDestinations.slice(0, 12);
+    quickPickPills.innerHTML = popularPicks.map((d) => {
+      const isSel = selectedDestinations.includes(d.name);
+      return `
+        <button type="button" class="dest-quick-pill ${isSel ? "selected" : ""}" data-dest-name="${escapeHTML(d.name)}" title="${isSel ? "In route" : "Add to route"}">
+          <i class="bi ${isSel ? "bi-check2" : "bi-plus"}"></i> ${escapeHTML(d.name.split(",")[0])}
+        </button>`;
+    }).join("");
+
+    quickPickPills.querySelectorAll(".dest-quick-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const destName = pill.dataset.destName;
+        if (selectedDestinations.includes(destName)) {
+          if (selectedDestinations.length > 1) {
+            selectedDestinations = selectedDestinations.filter((d) => d !== destName);
+            renderDestinationSlots();
+            updateTotal();
+          }
+        } else {
+          if (selectedDestinations.length < MAX_DESTINATIONS) {
+            selectedDestinations.push(destName);
+            renderDestinationSlots();
+            updateTotal();
+          } else {
+            if (window.showToast) window.showToast("Maximum of 5 destinations reached for this package journey.", "warning");
+          }
+        }
+      });
+    });
+  }
+
+  if (fill5DestBtn) {
+    fill5DestBtn.addEventListener("click", () => {
+      const set = new Set([currentTrip.destination]);
+      for (const d of allDestinations) {
+        if (set.size >= 5) break;
+        set.add(d.name);
+      }
+      selectedDestinations = Array.from(set);
+      renderDestinationSlots();
+      updateTotal();
+      if (window.showToast) window.showToast("5 curated destinations populated into your journey!", "success");
+    });
+  }
+
+  if (resetDestBtn) {
+    resetDestBtn.addEventListener("click", () => {
+      selectedDestinations = [currentTrip.destination];
+      renderDestinationSlots();
+      updateTotal();
+    });
+  }
+
+  if (addDestBtn) {
+    addDestBtn.addEventListener("click", () => {
+      if (selectedDestinations.length >= MAX_DESTINATIONS) {
+        if (window.showToast) window.showToast("You can choose up to 5 destinations per package booking.", "info");
+        return;
+      }
+      const candidate = allDestinations.find((d) => !selectedDestinations.includes(d.name));
+      if (candidate) {
+        selectedDestinations.push(candidate.name);
+      } else {
+        selectedDestinations.push(allDestinations[selectedDestinations.length % allDestinations.length].name);
+      }
+      renderDestinationSlots();
+      updateTotal();
+    });
+  }
 
   function updateTotal() {
     const count = Number(passengerCount.value) || 1;
     passengerSummary.textContent = count;
-    totalSummary.textContent = formatINR(trip.price * count);
+    const baseTotal = currentTrip.price * count;
+    // Multi-destination supplement: extra destinations beyond 1st
+    const extraStops = Math.max(0, selectedDestinations.length - 1);
+    const multiStopFee = extraStops * 4500 * count;
+    const finalTotal = baseTotal + multiStopFee;
+
+    totalSummary.innerHTML = `
+      ${formatINR(finalTotal)}
+      ${extraStops > 0 ? `<br><small class="text-muted" style="font-size:0.75rem; font-weight:normal;">Incl. ${extraStops} extra stop supplement</small>` : ""}
+    `;
   }
 
   passengerCount.addEventListener("input", updateTotal);
@@ -288,9 +545,10 @@ function setupBookingForm() {
           ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
         },
         body: JSON.stringify({
-          package_id: trip.id,
+          package_id: currentTrip.id,
           travel_date: travelDate.value,
           number_of_people: count,
+          custom_destinations: selectedDestinations,
           passengers: passengersList,
         }),
       });
@@ -301,14 +559,16 @@ function setupBookingForm() {
       }
     } catch (_) {}
 
+    const calculatedTotal = (currentTrip.price * count) + (Math.max(0, selectedDestinations.length - 1) * 4500 * count);
     const booking = {
       id: serverBookingCode || `TB-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-      packageId: trip.id,
-      packageName: trip.name,
-      destination: trip.destination,
+      packageId: currentTrip.id,
+      packageName: currentTrip.name,
+      destination: currentTrip.destination,
+      custom_destinations: [...selectedDestinations],
       travelDate: travelDate.value,
       passengers: count,
-      total: trip.price * count,
+      total: calculatedTotal,
       status: serverBookingCode ? "Confirmed Request" : "Requested",
     };
 
@@ -319,16 +579,19 @@ function setupBookingForm() {
       return;
     }
 
+    const routeText = selectedDestinations.join(" ➔ ");
     const msg = serverBookingCode
-      ? `Booking request ${serverBookingCode} has been successfully submitted and saved to your TravelBase account!`
-      : `Request ${booking.id} saved in your bookings list.`;
+      ? `Booking request ${serverBookingCode} has been successfully submitted and saved to MySQL database for ${currentTrip.name} across ${selectedDestinations.length} destination(s): ${routeText}!`
+      : `Request ${booking.id} saved in your bookings list for ${currentTrip.name} across ${selectedDestinations.length} destination(s): ${routeText}.`;
 
     showMessage(document.querySelector("#booking-message"), msg, "success");
     if (window.showToast) {
-      window.showToast(`Booking ${booking.id} created!`, "success", 4500);
+      window.showToast(`Booking ${booking.id} created for ${selectedDestinations.length} destinations!`, "success", 4500);
     }
   });
 
+  renderPackagePreview();
+  renderDestinationSlots();
   updateTotal();
 }
 
@@ -353,9 +616,15 @@ function setupSavedBookings() {
           liveBookings.forEach((b) => {
             const row = tableBody.insertRow();
             const badgeClass = b.status === "confirmed" ? "badge-success" : (b.status === "cancelled" ? "badge-danger" : "badge-warning");
+            const dests = (b.custom_destinations && b.custom_destinations.length > 0)
+              ? b.custom_destinations
+              : (b.destination ? [b.destination] : []);
+            const destBadge = dests.length > 0
+              ? `<div class="mt-1" style="font-size:0.8rem; color:var(--tb-deep-green);"><i class="bi bi-geo-alt-fill text-danger"></i> ${escapeHTML(dests.join(" → "))}</div>`
+              : "";
             row.innerHTML = `
               <td><strong>${escapeHTML(b.booking_code)}</strong></td>
-              <td>${escapeHTML(b.package_name)}</td>
+              <td><strong>${escapeHTML(b.package_name)}</strong>${destBadge}</td>
               <td>${b.travel_date || "Flexible"}</td>
               <td>${b.people}</td>
               <td>${formatINR(b.total_amount)}</td>
@@ -383,32 +652,30 @@ function setupSavedBookings() {
       const row = tableBody.insertRow(0);
       row.dataset.demoBooking = booking.id;
 
-      [
-        booking.id,
-        booking.packageName,
-        new Intl.DateTimeFormat("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }).format(new Date(`${booking.travelDate}T00:00:00`)),
-        String(booking.passengers),
-        formatINR(booking.total),
-      ].forEach((value) => {
-        row.insertCell().textContent = value;
-      });
+      const dests = (booking.custom_destinations && booking.custom_destinations.length > 0)
+        ? booking.custom_destinations
+        : (booking.destination ? [booking.destination] : []);
+      const destBadge = dests.length > 0
+        ? `<div class="mt-1" style="font-size:0.8rem; color:var(--tb-deep-green);"><i class="bi bi-geo-alt-fill text-danger"></i> ${escapeHTML(dests.join(" → "))}</div>`
+        : "";
 
-      const statusCell = row.insertCell();
-      const badge = document.createElement("span");
-      badge.className = "badge badge-warning";
-      badge.textContent = booking.status;
-      statusCell.appendChild(badge);
+      const formattedDate = new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(`${booking.travelDate}T00:00:00`));
 
-      const actionCell = row.insertCell();
-      const cancelButton = document.createElement("button");
-      cancelButton.className = "btn btn-outline btn-sm";
-      cancelButton.type = "button";
-      cancelButton.textContent = "Cancel";
-      cancelButton.addEventListener("click", () => {
+      row.innerHTML = `
+        <td><strong>${escapeHTML(booking.id)}</strong></td>
+        <td><strong>${escapeHTML(booking.packageName)}</strong>${destBadge}</td>
+        <td>${formattedDate}</td>
+        <td>${booking.passengers}</td>
+        <td>${formatINR(booking.total)}</td>
+        <td><span class="badge badge-warning">${escapeHTML(booking.status)}</span></td>
+        <td><button class="btn btn-outline btn-sm delete-demo-btn" type="button" data-id="${booking.id}">Cancel</button></td>
+      `;
+
+      row.querySelector(".delete-demo-btn").addEventListener("click", () => {
         if (!confirm("Remove this booking request from this browser?")) {
           return;
         }
@@ -420,7 +687,6 @@ function setupSavedBookings() {
           showBookingStorageError(message, error);
         }
       });
-      actionCell.appendChild(cancelButton);
     });
   }
 

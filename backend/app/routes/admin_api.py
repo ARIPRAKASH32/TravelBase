@@ -230,6 +230,7 @@ def get_all_admin_bookings():
             "customer_phone": b.customer.phone if (b.customer and b.customer.phone) else "",
             "package_name": b.package.package_name if b.package else "Custom Trip",
             "destination": b.package.destination.name if (b.package and b.package.destination) else "",
+            "custom_destinations": getattr(b, "custom_destinations", None) or [],
             "travel_date": b.travel_date.isoformat() if b.travel_date else None,
             "people": b.number_of_people,
             "total_amount": float(b.total_amount) if b.total_amount else 0.0,

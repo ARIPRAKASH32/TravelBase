@@ -80,6 +80,7 @@ class Booking(db.Model):
     number_of_people = db.Column(db.Integer, nullable=False)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
     booking_status = db.Column(db.String(20), nullable=False, default="pending")
+    custom_destinations = db.Column(db.JSON, nullable=True, default=list)
     created_at = db.Column(db.DateTime, nullable=False, default=_utc_now)
 
     customer = db.relationship("User", back_populates="bookings")

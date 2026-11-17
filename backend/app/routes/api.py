@@ -206,6 +206,7 @@ def get_customer_bookings():
             "booking_code": b.booking_code,
             "package_name": b.package.package_name if b.package else "Custom Trip",
             "destination": b.package.destination.name if (b.package and b.package.destination) else "",
+            "custom_destinations": b.custom_destinations or [],
             "travel_date": b.travel_date.isoformat() if b.travel_date else None,
             "people": b.number_of_people,
             "total_amount": float(b.total_amount) if b.total_amount else 0.0,
@@ -266,6 +267,17 @@ def create_booking():
     total_amount = Decimal(pkg.price) * Decimal(people)
     booking_code = f"TB-{secrets.token_hex(4).upper()}"
 
+    # Multi-destination support (up to 5 destinations)
+    raw_destinations = data.get("custom_destinations") or data.get("destinations") or []
+    if isinstance(raw_destinations, str):
+        custom_destinations_data = [d.strip() for d in raw_destinations.split(",") if d.strip()]
+    elif isinstance(raw_destinations, list):
+        custom_destinations_data = [str(d).strip() for d in raw_destinations if str(d).strip()]
+    else:
+        custom_destinations_data = []
+    # Cap at 5 destinations
+    custom_destinations_data = custom_destinations_data[:5]
+
     booking = Booking(
         booking_code=booking_code,
         customer_id=user.id,
@@ -274,6 +286,7 @@ def create_booking():
         number_of_people=people,
         total_amount=total_amount,
         booking_status="pending",
+        custom_destinations=custom_destinations_data,
     )
     db.session.add(booking)
     db.session.flush()
@@ -298,5 +311,6 @@ def create_booking():
         "booking_code": booking_code,
         "id": booking.id,
         "total_amount": float(total_amount),
+        "custom_destinations": custom_destinations_data,
         "status": "pending",
     }), 201

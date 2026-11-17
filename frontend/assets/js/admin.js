@@ -15,6 +15,7 @@
 
   const customerLinks = [
     ["dashboard", "dashboard.html", "grid-1x2", "Overview"],
+    ["book", "booking.html", "compass", "Book 5-Dest Trip"],
     ["bookings", "my-bookings.html", "ticket-perforated", "My bookings"],
     ["profile", "profile.html", "person", "My profile"],
   ];
@@ -983,7 +984,10 @@ async function setupBookingActions() {
             <tr data-booking-id="${b.id}">
               <td><strong>${escapeHTML(b.code)}</strong></td>
               <td>${escapeHTML(b.customer_name)}<br><small class="text-muted">${escapeHTML(b.customer_email)}</small></td>
-              <td>${escapeHTML(b.package_name)}</td>
+              <td>
+                <strong>${escapeHTML(b.package_name)}</strong>
+                ${b.custom_destinations && b.custom_destinations.length > 0 ? `<br><small style="color:var(--tb-deep-green);"><i class="bi bi-geo-alt-fill text-danger"></i> ${escapeHTML(b.custom_destinations.join(" → "))}</small>` : (b.destination ? `<br><small class="text-muted"><i class="bi bi-geo-alt"></i> ${escapeHTML(b.destination)}</small>` : "")}
+              </td>
               <td>${b.travel_date || "Flexible"}</td>
               <td>${b.people}</td>
               <td>${formatINR(b.total_amount)}</td>

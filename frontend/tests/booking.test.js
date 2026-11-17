@@ -76,3 +76,25 @@ test("rejects saved bookings with invalid fields", () => {
 
   assert.throws(() => context.readDemoBookings(), { name: "TypeError" });
 });
+
+test("saves and retrieves custom 5-destination multi-stop booking", () => {
+  const { context } = createBookingContext();
+  const multiDestBooking = {
+    ...booking,
+    id: "TB-5DEST-TEST",
+    custom_destinations: [
+      "Paris, France",
+      "Rome, Italy",
+      "Lucerne & Interlaken, Switzerland",
+      "Amalfi Coast, Italy",
+      "Santorini, Greece",
+    ],
+  };
+
+  context.saveDemoBookings([multiDestBooking]);
+  const saved = context.readDemoBookings();
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].id, "TB-5DEST-TEST");
+  assert.equal(saved[0].custom_destinations.length, 5);
+  assert.equal(saved[0].custom_destinations[4], "Santorini, Greece");
+});

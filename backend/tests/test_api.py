@@ -81,3 +81,44 @@ class TestPublicAPIs(unittest.TestCase):
             enquiry = Enquiry.query.filter_by(email="concierge-test@example.com").first()
             self.assertIsNotNone(enquiry)
             self.assertEqual(enquiry.name, "Luxury Traveler")
+
+    def test_20_plus_packages_available(self):
+        res = self.client.get("/api/packages")
+        self.assertEqual(res.status_code, 200)
+        self.assertGreaterEqual(len(res.json), 20, "Should have 20+ packages available")
+
+    def test_20_plus_destinations_available(self):
+        res = self.client.get("/api/destinations")
+        self.assertEqual(res.status_code, 200)
+        self.assertGreaterEqual(len(res.json), 20, "Should have 20+ destinations available")
+
+    def test_booking_5_destinations_in_any_package(self):
+        token = self._csrf_token()
+        destinations_5 = [
+            "Paris, France",
+            "Rome, Italy",
+            "Lucerne & Interlaken, Switzerland",
+            "Amalfi Coast, Italy",
+            "Santorini, Greece",
+        ]
+        res = self.client.post(
+            "/api/bookings",
+            json={
+                "package_id": "paris-romance",
+                "name": "Marco Polo",
+                "email": "marcopolo@travelbase.test",
+                "travel_date": "2027-06-15",
+                "number_of_people": 2,
+                "custom_destinations": destinations_5,
+                "passengers": [
+                    {"name": "Marco Polo", "email": "marcopolo@travelbase.test"},
+                    {"name": "Niccolo Polo", "email": "niccolo@travelbase.test"},
+                ],
+            },
+            headers={"X-CSRF-Token": token},
+        )
+        self.assertEqual(res.status_code, 201)
+        data = res.json
+        self.assertTrue(data["success"])
+        self.assertEqual(len(data["custom_destinations"]), 5)
+        self.assertEqual(data["custom_destinations"], destinations_5)
