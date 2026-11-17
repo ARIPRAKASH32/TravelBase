@@ -122,7 +122,7 @@ function setupProfileForm() {
       if (res.ok) {
         showMessage(
           document.querySelector("#profile-message"),
-          "Profile successfully updated in database.",
+          "Profile successfully updated.",
           "success",
         );
         if (window.showToast) window.showToast("Profile updated!", "success");
@@ -610,7 +610,7 @@ async function setupBookingForm() {
 
     const routeText = selectedDestinations.join(" ➔ ");
     const msg = serverBookingCode
-      ? `Booking request ${serverBookingCode} has been successfully submitted and saved to MySQL database for ${currentTrip.name} across ${selectedDestinations.length} destination(s): ${routeText}!`
+      ? `Booking request ${serverBookingCode} has been successfully confirmed for ${currentTrip.name} across ${selectedDestinations.length} destination(s): ${routeText}!`
       : `Request ${booking.id} saved in your bookings list for ${currentTrip.name} across ${selectedDestinations.length} destination(s): ${routeText}.`;
 
     showMessage(document.querySelector("#booking-message"), msg, "success");
@@ -658,7 +658,7 @@ function setupSavedBookings() {
               <td>${b.people}</td>
               <td>${formatINR(b.total_amount)}</td>
               <td><span class="badge ${badgeClass}">${escapeHTML(b.status)}</span></td>
-              <td><span class="text-muted" style="font-size:0.85rem">Confirmed in DB</span></td>
+              <td><a class="btn btn-outline btn-sm" href="../../pages/packages.html">View Trip</a></td>
             `;
           });
           return;

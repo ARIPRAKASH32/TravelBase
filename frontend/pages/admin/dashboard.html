@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../../assets/css/responsive.css?v=3.1">
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script defer src="../../assets/js/main.js?v=3.3"></script>
-    <script defer src="../../assets/js/admin.js"></script>
+    <script defer src="../../assets/js/admin.js?v=3.5"></script>
   </head>
   <body data-root="../.." data-role="admin" data-section="dashboard">
     <div id="dashboard-shell"></div>
@@ -26,7 +26,7 @@
       <div class="executive-banner">
         <div class="executive-title-group">
           <div class="meta-tag-strip">
-            <span class="live-pulse-chip"><span class="pulse-emerald"></span> MySQL Active (3306)</span>
+            <span class="live-pulse-chip"><span class="pulse-emerald"></span> Live & Active</span>
             <span class="session-chip"><i class="bi bi-shield-check"></i> Operations Console</span>
           </div>
           <h1 class="executive-heading">Operations &amp; Revenue Console</h1>
@@ -52,7 +52,7 @@
           </div>
           <span class="stat-label">Total Realized Revenue</span>
           <strong class="stat-number" id="val-revenue">₹1,39,600</strong>
-          <small class="stat-note" id="sub-revenue"><i class="bi bi-check2-circle"></i> From confirmed bookings in MySQL</small>
+          <small class="stat-note" id="sub-revenue"><i class="bi bi-check2-circle"></i> From confirmed reservations</small>
         </article>
 
         <!-- Card 2: Bookings -->
@@ -136,12 +136,12 @@
         </section>
       </div>
 
-      <!-- Recent Bookings Panel (Populated dynamically from MySQL) -->
+      <!-- Recent Bookings Panel -->
       <section class="panel">
         <div class="panel-heading">
           <div>
             <h2>Recent Client Reservations</h2>
-            <p class="panel-subtitle">Latest booking requests submitted to MySQL database</p>
+            <p class="panel-subtitle">Latest booking requests received</p>
           </div>
           <a class="panel-link" href="bookings.html">View all bookings <i class="bi bi-arrow-right"></i></a>
         </div>

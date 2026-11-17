@@ -412,7 +412,7 @@ async function loadLiveAdminStats() {
     const subRevenue = document.querySelector("#sub-revenue");
     if (subRevenue) {
       const conf = stats.confirmed_bookings || 0;
-      subRevenue.innerHTML = `<i class="bi bi-check2-circle"></i> From ${conf} confirmed reservation${conf === 1 ? "" : "s"} in MySQL`;
+      subRevenue.innerHTML = `<i class="bi bi-check2-circle"></i> From ${conf} confirmed reservation${conf === 1 ? "" : "s"}`;
     }
 
     const valBookings = document.querySelector("#val-bookings");
@@ -586,14 +586,14 @@ async function setupPackageManagement() {
         <input name="image" type="url" required placeholder="https://images.unsplash.com/...">
       </div>
     </div>
-    <p class="notice"><i class="bi bi-database-check"></i> Changes are synchronized directly with your MySQL database.</p>
+    <p class="notice"><i class="bi bi-database-check"></i> Changes are synchronized directly with the platform.</p>
     <div style="margin-top: 16px">
       <button class="btn btn-primary" type="submit"><i class="bi bi-check-circle"></i> Save package</button>
     </div>`;
 
   async function loadBackendPackages() {
     try {
-      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split"></i> Loading packages from MySQL...</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split"></i> Loading packages ...</td></tr>`;
       const res = await fetch("/api/packages");
       if (res.ok) {
         const liveList = await res.json();
@@ -604,13 +604,13 @@ async function setupPackageManagement() {
       renderPackages();
     } catch (err) {
       console.error("Failed to load packages:", err);
-      tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load packages from MySQL.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load packages .</td></tr>`;
     }
   }
 
   function renderPackages() {
     if (!livePackages || livePackages.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No packages found in MySQL. Click "Add package" to create one.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No packages found. Click "Add package" to create one.</td></tr>`;
       return;
     }
 
@@ -656,7 +656,7 @@ async function setupPackageManagement() {
         const pkg = livePackages.find((p) => p.id === slug);
         const name = pkg ? pkg.name : slug;
 
-        if (!confirm(`Archive / remove package "${name}" from MySQL?`)) {
+        if (!confirm(`Archive / remove package "${name}" ?`)) {
           return;
         }
 
@@ -671,7 +671,7 @@ async function setupPackageManagement() {
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
-            if (window.showToast) window.showToast(data.message || `Package archived in MySQL`, "success");
+            if (window.showToast) window.showToast(data.message || `Package archived`, "success");
             await loadBackendPackages();
           } else {
             alert(data.error || "Could not delete package.");
@@ -705,7 +705,7 @@ async function setupPackageManagement() {
         };
 
     showAdminModal(
-      isNew ? "Add package to MySQL" : `Edit ${pkg.name}`,
+      isNew ? "Add package " : `Edit ${pkg.name}`,
       `<form id="package-edit-form">${fields}</form>`,
       async (formData) => {
         const payload = {
@@ -735,15 +735,15 @@ async function setupPackageManagement() {
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
             if (window.showToast) {
-              window.showToast(isNew ? `Package "${payload.name}" saved to MySQL!` : `Package "${payload.name}" updated!`, "success");
+              window.showToast(isNew ? `Package "${payload.name}" saved !` : `Package "${payload.name}" updated successfully!`, "success");
             }
             await loadBackendPackages();
           } else {
-            alert(data.error || "Failed to save package to MySQL.");
+            alert(data.error || "Failed to save package .");
           }
         } catch (err) {
           console.error("Package save error", err);
-          alert("Network error connecting to backend.");
+          alert("Network error connecting to server.");
         }
       },
     );
@@ -790,12 +790,12 @@ async function setupDestinationManagement() {
         <input name="image" type="url" placeholder="https://images.unsplash.com/...">
       </div>
     </div>
-    <p class="notice"><i class="bi bi-database-check"></i> Changes are synchronized directly with your MySQL database.</p>
+    <p class="notice"><i class="bi bi-database-check"></i> Changes are synchronized directly with the platform.</p>
     <button class="btn btn-primary" style="margin-top: 15px" type="submit"><i class="bi bi-check-circle"></i> Save destination</button>`;
 
   async function loadBackendDestinations() {
     try {
-      tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split"></i> Loading destinations from MySQL...</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split"></i> Loading destinations ...</td></tr>`;
       const res = await fetch("/api/admin/destinations", { credentials: "same-origin" });
       if (res.ok) {
         liveDestinations = await res.json();
@@ -808,13 +808,13 @@ async function setupDestinationManagement() {
       renderDestinations();
     } catch (err) {
       console.error("Failed to load destinations:", err);
-      tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Failed to load destinations from MySQL. Please refresh.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Failed to load destinations . Please refresh.</td></tr>`;
     }
   }
 
   function renderDestinations() {
     if (!liveDestinations || liveDestinations.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No destinations found in MySQL database. Click "Add destination" to create one.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No destinations found database. Click "Add destination" to create one.</td></tr>`;
       return;
     }
 
@@ -859,7 +859,7 @@ async function setupDestinationManagement() {
         const dest = liveDestinations.find((d) => d.id === destId);
         const destName = dest ? dest.name : `ID #${destId}`;
 
-        if (!confirm(`Are you sure you want to permanently delete destination "${destName}" from MySQL?`)) {
+        if (!confirm(`Are you sure you want to permanently delete destination "${destName}" ?`)) {
           return;
         }
 
@@ -875,7 +875,7 @@ async function setupDestinationManagement() {
 
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
-            if (window.showToast) window.showToast(data.message || `Destination deleted from MySQL`, "success");
+            if (window.showToast) window.showToast(data.message || `Destination deleted `, "success");
             await loadBackendDestinations();
           } else {
             alert(data.error || "Could not delete destination.");
@@ -893,7 +893,7 @@ async function setupDestinationManagement() {
     const initialData = destination || { name: "", location: "", description: "", image: "" };
 
     showAdminModal(
-      isNew ? "Add destination to MySQL" : `Edit ${destination.name}`,
+      isNew ? "Add destination " : `Edit ${destination.name}`,
       `<form id="destination-edit-form">${fields}</form>`,
       async (formData) => {
         const payload = {
@@ -921,15 +921,15 @@ async function setupDestinationManagement() {
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
             if (window.showToast) {
-              window.showToast(isNew ? `Destination "${payload.name}" saved to MySQL!` : `Destination "${payload.name}" updated!`, "success");
+              window.showToast(isNew ? `Destination "${payload.name}" saved !` : `Destination "${payload.name}" updated successfully!`, "success");
             }
             await loadBackendDestinations();
           } else {
-            alert(data.error || "Failed to save destination to MySQL.");
+            alert(data.error || "Failed to save destination .");
           }
         } catch (err) {
           console.error("Failed to save destination:", err);
-          alert("Network error connecting to MySQL backend.");
+          alert("Network error connecting  backend.");
         }
       },
     );
@@ -1083,7 +1083,7 @@ async function setupCustomerActions() {
       if (Array.isArray(customers) && customers.length > 0) {
         const noticeEl = document.querySelector(".panel .toolbar .notice");
         if (noticeEl) {
-          noticeEl.textContent = `${customers.length} registered customer accounts in MySQL`;
+          noticeEl.textContent = `${customers.length} registered customer accounts`;
         }
 
         tbody.innerHTML = customers
@@ -1131,7 +1131,7 @@ async function setupCustomerActions() {
       }
     }
   } catch (err) {
-    console.warn("Could not load customers from MySQL:", err);
+    console.warn("Could not load customers :", err);
   }
 
   // Fallback demo handler
@@ -1153,7 +1153,7 @@ async function setupPaymentActions() {
       if (Array.isArray(payments) && payments.length > 0) {
         const noticeEl = document.querySelector(".panel .toolbar .notice");
         if (noticeEl) {
-          noticeEl.textContent = `${payments.length} transactions recorded in MySQL`;
+          noticeEl.textContent = `${payments.length} transactions recorded`;
         }
 
         tbody.innerHTML = payments
@@ -1172,7 +1172,7 @@ async function setupPaymentActions() {
       }
     }
   } catch (err) {
-    console.warn("Could not load payments from MySQL:", err);
+    console.warn("Could not load payments :", err);
   }
 }
 
