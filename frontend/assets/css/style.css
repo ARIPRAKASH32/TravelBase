@@ -1797,3 +1797,68 @@ input:-webkit-autofill:active {
   color: #FFFFFF;
   box-shadow: 0 4px 12px rgba(47, 78, 62, 0.25);
 }
+
+
+/* --------------------------------------------------------------------------
+   OVERFLOW & TEXT-WRAP UTILITY CLASSES
+   -------------------------------------------------------------------------- */
+.overflow-fix {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Global overflow protection for dashboard and booking elements */
+.app-main,
+.booking-layout,
+.panel,
+.package-picker-box,
+.multi-dest-section,
+.destination-slot-card,
+.dest-select-wrapper,
+.route-summary-box,
+.summary-route-list,
+.summary-route-item,
+.passenger,
+.stat-card,
+.app-titlebar,
+.executive-banner,
+.panel-heading,
+.table-img-name {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.dest-quick-pill,
+.quick-pill,
+.category-pill,
+.badge,
+.dest-badge-counter,
+.notice,
+.notice-pill {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.booking-layout aside.panel,
+.route-summary-box,
+.summary-route-item span,
+.package-picker-box p,
+.multi-dest-header small,
+.app-titlebar p {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+#quick-pick-pills {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Ensure booking grid doesn't overflow viewport */
+.booking-layout {
+  overflow: hidden;
+}

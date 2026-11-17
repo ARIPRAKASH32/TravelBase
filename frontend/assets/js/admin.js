@@ -61,7 +61,7 @@
       </button>
       <span class="text-muted">${isCustomer ? "Customer portal" : "Administration"}</span>
       <div class="app-user">
-        <span>${isCustomer ? "Alex Morgan" : "TravelBase Admin"}</span>
+        <span>${isCustomer ? '<span id="header-user-name">Traveler</span>' : "TravelBase Admin"}</span>
         <span class="avatar"><i class="bi bi-person"></i></span>
       </div>
     </header>`;
@@ -1179,5 +1179,28 @@ async function setupPaymentActions() {
 document.addEventListener("DOMContentLoaded", () => {
   renderDashboardShell();
   setupAdmin();
+  loadCustomerName();
 });
+
+async function loadCustomerName() {
+  const role = document.body.dataset.role || "admin";
+  if (role !== "customer") return;
+
+  try {
+    const res = await fetch("/api/profile", { credentials: "same-origin" });
+    if (!res.ok) return;
+    const data = await res.json();
+    const displayName = data.name || "Traveler";
+
+    // Update header user name
+    const headerName = document.querySelector("#header-user-name");
+    if (headerName) headerName.textContent = displayName;
+
+    // Update dashboard greeting
+    const customerName = document.querySelector("#customer-name");
+    if (customerName) customerName.textContent = displayName;
+  } catch (err) {
+    console.warn("Could not load customer profile name:", err);
+  }
+}
 
