@@ -536,12 +536,14 @@
 /* Tables */
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 th, td {
@@ -549,6 +551,10 @@ th, td {
   padding: 14px 18px;
   border-bottom: 1px solid var(--tb-line-light);
   font-size: 0.9rem;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 th {
@@ -558,6 +564,7 @@ th {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  white-space: nowrap;
 }
 
 td {
@@ -571,6 +578,8 @@ tr:hover td {
 .table-actions {
   display: flex;
   gap: 10px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 /* Admin Search & Content Grid */
@@ -710,12 +719,20 @@ tr:hover td {
   height: 46px;
   object-fit: cover;
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
 .table-img-name {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
+}
+
+.table-img-name > div {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Responsive Dashboard */
